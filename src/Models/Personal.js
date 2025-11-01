@@ -123,6 +123,8 @@ export default class Personal extends Model {
     this.hasOne(models.Enderecos, { foreignKey: 'personal_id' });
     this.hasMany(models.PersonalAgenda, { foreignKey: 'personal_id' });
     this.hasMany(models.AulaAgenda, { foreignKey: 'personal_id' });
+    this.hasMany(models.ExercicioPersonal, { foreignKey: 'personal_id' });
+    this.hasMany(models.planoTreino, { foreignKey: 'personal_id' });
   }
 
   // Relações com outras tabelas;

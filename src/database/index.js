@@ -11,6 +11,11 @@ import AulaAgenda from '../Models/AgendaAulas';
 import Enderecos from '../Models/Enderecos';
 import Conversa from '../Models/Conversa';
 import Mensagem from '../Models/Mensagem';
+import ExercicioPersonal from '../Models/ExercicioPersonal';
+import planoTreino from '../Models/planoTreino';
+import SessaoTreino from '../Models/sessaoTreino';
+import itemExercicio from '../Models/itemExercicio';
+import videoExercicio from '../Models/videoExercicio';
 
 const models = [
   Administrador,
@@ -23,6 +28,11 @@ const models = [
   Enderecos,
   Conversa,
   Mensagem,
+  ExercicioPersonal,
+  planoTreino,
+  SessaoTreino,
+  itemExercicio,
+  videoExercicio
 ];
 
 const connection = new Sequelize(databaseConfig);

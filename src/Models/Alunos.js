@@ -111,6 +111,7 @@ export default class Alunos extends Model {
   static associate(models) {
     this.hasMany(models.AlunoFoto, { foreignKey: 'aluno_id' });
     this.hasMany(models.AulaAgenda, { foreignKey: 'aluno_id' });
+    this.hasMany(models.planoTreino, { foreignKey: 'aluno_id' });
     this.hasOne(models.Enderecos, { foreignKey: 'aluno_id' });
   }
 

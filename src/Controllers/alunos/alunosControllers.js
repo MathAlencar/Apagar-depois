@@ -12,7 +12,7 @@ class AlunoControllers {
       return res.json({ id, nome, email });
     } catch (e) {
       return res.status(400).json({
-        errors: e.errors.map((err) => err.message),
+        errors: e.errors?.map((err) => err.message) || [e.message],
       });
     }
   }
@@ -67,6 +67,7 @@ class AlunoControllers {
       }
 
       const users = await Aluno.findAll(options);
+      
       return res.json(users);
     } catch (e) {
       return res.status(400).json({

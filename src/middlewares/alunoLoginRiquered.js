@@ -28,8 +28,11 @@ export default async (req, res, next) => {
         errors: ['Login riquered'],
       });
     }
-    req.userId = id;
+
+    req.userID = id;
     req.userEmail = email;
+
+
 
     return next();
   } catch (e) {

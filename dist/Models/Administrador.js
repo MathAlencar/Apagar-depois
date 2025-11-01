@@ -1,16 +1,17 @@
 "use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _sequelize = require('sequelize'); var _sequelize2 = _interopRequireDefault(_sequelize);
 var _bcrypt = require('bcrypt'); var _bcrypt2 = _interopRequireDefault(_bcrypt);
 
-/* Neste arquivo realizamos a condifgurações das colunas de dados da nossa tabela
-Sua função envolve a validação de dado inputado, assim como o manuseio da senha que será enviada ao banco de dados via Hash,
-o hook abaixo irá manipular uma variável virutal(não tem no banco de dados, somente no ambiente abaixo), onde sua função é armazenar a senha enviada
-pelo usuário, a qual será transformada em hash com esse hook que irá realizar esse procedimento antes de salvar o usuário no banco de dados.
+/*
+Neste arquivo realizamos as configurações das colunas de dados da nossa tabela.
+Sua função envolve a validação de dados inputados, assim como o manuseio da senha que será enviada ao banco de dados via Hash.
+O hook abaixo irá manipular uma variável virtual (não salva no banco de dados), que armazenará a senha temporariamente.
 */
 
  class Administrador extends _sequelize.Model {
   static init(sequelize) {
     super.init({
       nome: {
+        type: _sequelize2.default.STRING,
         defaultValue: '',
         validate: {
           len: {
@@ -18,9 +19,9 @@ pelo usuário, a qual será transformada em hash com esse hook que irá realizar
             msg: 'Campo nome deve ter entre 3 a 255 caracteres',
           },
         },
-        type: _sequelize2.default.STRING,
       },
       email: {
+        type: _sequelize2.default.STRING,
         defaultValue: '',
         unique: {
           msg: 'Email já existe',
@@ -30,13 +31,13 @@ pelo usuário, a qual será transformada em hash com esse hook que irá realizar
             msg: 'Campo e-mail inválido',
           },
         },
-        type: _sequelize2.default.STRING,
       },
       password_hash: {
-        defaultValue: '',
         type: _sequelize2.default.INTEGER,
+        defaultValue: '',
       },
       password: {
+        type: _sequelize2.default.VIRTUAL,
         defaultValue: '',
         validate: {
           len: {
@@ -44,7 +45,6 @@ pelo usuário, a qual será transformada em hash com esse hook que irá realizar
             msg: 'Campo senha deve ter entre 6 a 50 caracteres',
           },
         },
-        type: _sequelize2.default.VIRTUAL,
       },
     }, {
       sequelize,

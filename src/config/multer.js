@@ -22,4 +22,5 @@ export default {
       cb(null, `${Date.now()}_${aleatorio()}${extname(file.originalname)}`);
     },
   }), // irá salvar dentro de alguma pasta lá no servidor.
+  
 };

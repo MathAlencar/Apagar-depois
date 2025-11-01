@@ -33,7 +33,7 @@ export default class PersonalAgenda extends Model {
     return this;
   }
 
-  static assocaite(models) {
+  static associate(models) {
     this.belongsTo(models.Personal, { foreignKey: 'personal_id' });
   }
 }

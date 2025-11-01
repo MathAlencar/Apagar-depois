@@ -19,6 +19,11 @@ import AlunoFotosRoutes from './src/routes/alunos/alunosFotosRoutes';
 import AgendaRoutes from './src/routes/AgendaGeral/agendaRoutes';
 import EnderecosRoutes from './src/routes/enderecos/enredecosRoutes';
 import ChatRoutes from './src/routes/chat/chatRoutes';
+import ExerciciosPersonal from './src/routes/ExerciciosPersonal/ExerciciosPersonal';
+import PlanoTreinoRoutes from './src/routes/PlanoTreino/PlanoTreinoRoutes';
+import SessaoTreino from './src/routes/SessaoTreino/sessaoTreinoRoutes';
+import itemExercicioRoutes from './src/routes/itemExercicio/itemExercicioRoutes';
+import videoExercicioRoutes from './src/routes/ExerciciosPersonal/videoExercicioRoutes';
 
 class App {
   constructor() {
@@ -47,6 +52,11 @@ class App {
     this.app.use('/personal/', PersonalRoutes);
     this.app.use('/agenda/', AgendaRoutes);
     this.app.use('/chat/', ChatRoutes);
+    this.app.use('/exercicios/', ExerciciosPersonal);
+    this.app.use('/exercicios/video/', videoExercicioRoutes)
+    this.app.use('/plano/', PlanoTreinoRoutes);
+    this.app.use('/sessao/treino/', SessaoTreino);
+    this.app.use('/item/exercicio/', itemExercicioRoutes);
   }
 }
 
