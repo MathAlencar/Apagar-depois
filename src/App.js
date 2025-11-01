@@ -3,27 +3,27 @@ import { resolve } from 'path';
 
 dotenv.config();
 
-import './src/database';
+import './database';
 
 import cors from 'cors';
 import express from 'express';
-import AdminRoutes from './src/routes/administrador/administradorRoutes';
-import AdmintokenRoutes from './src/routes/administrador/TokenRoutes';
-import PersonalRoutes from './src/routes/personal/personalRouter';
-import tokenPersonalRoutes from './src/routes/personal/personalTokenRoutes';
-import PersonalFotoRoutes from './src/routes/personal/personalFotosRouter';
-import PersonalAgendaRoutes from './src/routes/personal/personalAgendaRoutes';
-import AlunosRoutes from './src/routes/alunos/alunosRoutes';
-import tokenAlunosRoutes from './src/routes/alunos/alunosTokenRoutes';
-import AlunoFotosRoutes from './src/routes/alunos/alunosFotosRoutes';
-import AgendaRoutes from './src/routes/AgendaGeral/agendaRoutes';
-import EnderecosRoutes from './src/routes/enderecos/enredecosRoutes';
-import ChatRoutes from './src/routes/chat/chatRoutes';
-import ExerciciosPersonal from './src/routes/ExerciciosPersonal/ExerciciosPersonal';
-import PlanoTreinoRoutes from './src/routes/PlanoTreino/PlanoTreinoRoutes';
-import SessaoTreino from './src/routes/SessaoTreino/sessaoTreinoRoutes';
-import itemExercicioRoutes from './src/routes/itemExercicio/itemExercicioRoutes';
-import videoExercicioRoutes from './src/routes/ExerciciosPersonal/videoExercicioRoutes';
+import AdminRoutes from './routes/administrador/administradorRoutes';
+import AdmintokenRoutes from './routes/administrador/TokenRoutes';
+import PersonalRoutes from './routes/personal/personalRouter';
+import tokenPersonalRoutes from './routes/personal/personalTokenRoutes';
+import PersonalFotoRoutes from './routes/personal/personalFotosRouter';
+import PersonalAgendaRoutes from './routes/personal/personalAgendaRoutes';
+import AlunosRoutes from './routes/alunos/alunosRoutes';
+import tokenAlunosRoutes from './routes/alunos/alunosTokenRoutes';
+import AlunoFotosRoutes from './routes/alunos/alunosFotosRoutes';
+import AgendaRoutes from './routes/AgendaGeral/agendaRoutes';
+import EnderecosRoutes from './routes/enderecos/enredecosRoutes';
+import ChatRoutes from './routes/chat/chatRoutes';
+import ExerciciosPersonal from './routes/ExerciciosPersonal/ExerciciosPersonal';
+import PlanoTreinoRoutes from './routes/PlanoTreino/PlanoTreinoRoutes';
+import SessaoTreino from './routes/SessaoTreino/sessaoTreinoRoutes';
+import itemExercicioRoutes from './routes/itemExercicio/itemExercicioRoutes';
+import videoExercicioRoutes from './routes/ExerciciosPersonal/videoExercicioRoutes';
 
 class App {
   constructor() {
