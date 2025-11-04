@@ -5,7 +5,7 @@ var _alunoLoginRiquered = require('../../middlewares/alunoLoginRiquered'); var _
 
 const routes = _express.Router.call(void 0, );
 
-routes.post('/:id/', _personalLoginRiquered2.default , _planoTreinoControllers2.default.store); // Cadastrar plano de treino.
+routes.post('/:id/', _personalLoginRiquered2.default ,_planoTreinoControllers2.default.store); // Cadastrar plano de treino.
 
 routes.get('/personal/aluno/planos/:id/', _personalLoginRiquered2.default , _planoTreinoControllers2.default.index); // Rota que o personal terá acesso, para consultar todos os dados de planos de um aluno, porém mais de um treino.
 routes.get('/personal/aluno/plano/:id', _personalLoginRiquered2.default , _planoTreinoControllers2.default.indexOne); // Rota que o personal terá acesso, para consultar todos os dados de um plano de um aluno, porém somente um plano.

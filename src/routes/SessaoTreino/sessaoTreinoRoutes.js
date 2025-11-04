@@ -2,7 +2,6 @@ import { Router } from 'express';
 import sessaoTreinoControllers from '../../Controllers/sessaoTreino/sessaoTreinoControllers';
 import personalLoginRiquered from "../../middlewares/personalLoginRiquered";
 
-
 const routes = Router();
 
 routes.post('/:id/', personalLoginRiquered, sessaoTreinoControllers.store); // Cadastrar plano de treino.

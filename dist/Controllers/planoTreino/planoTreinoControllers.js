@@ -61,7 +61,7 @@ class PlanoTreinoControllers {
           errors: ['plano Treino não encontrado'],
         });
       }
-      
+
       const newPlanoTreino = await planoTreino.update(req.body);
 
       return res.status(200).json(newPlanoTreino);
@@ -99,7 +99,7 @@ class PlanoTreinoControllers {
           errors: ['plano Treino não encontrado'],
         });
       }
-      
+
       await planoTreino.destroy();
 
       return res.status(200).json({

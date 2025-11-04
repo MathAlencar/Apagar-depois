@@ -5,7 +5,7 @@ import alunoLoginRiquered from '../../middlewares/alunoLoginRiquered';
 
 const routes = Router();
 
-routes.post('/:id/', personalLoginRiquered , planoTreinoControllers.store); // Cadastrar plano de treino.
+routes.post('/:id/', personalLoginRiquered ,planoTreinoControllers.store); // Cadastrar plano de treino.
 
 routes.get('/personal/aluno/planos/:id/', personalLoginRiquered , planoTreinoControllers.index); // Rota que o personal terá acesso, para consultar todos os dados de planos de um aluno, porém mais de um treino.
 routes.get('/personal/aluno/plano/:id', personalLoginRiquered , planoTreinoControllers.indexOne); // Rota que o personal terá acesso, para consultar todos os dados de um plano de um aluno, porém somente um plano.

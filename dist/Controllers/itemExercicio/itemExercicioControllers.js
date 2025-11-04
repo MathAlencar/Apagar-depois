@@ -4,7 +4,7 @@ class ItemExercicioControllers {
 
   async store(req, res) {
     try {
-        
+
       const {ordem, series, repeticoes, tempo_descanso_segundos, observacoes, exercicio_personal_id} = req.body;
 
       const body = {
@@ -53,7 +53,7 @@ class ItemExercicioControllers {
           errors: ['Sessão não encontrada'],
         });
       }
-      
+
       const newItemExercicio = await ItemExercicio.update(req.body);
 
       return res.status(200).json(newItemExercicio);
@@ -90,7 +90,7 @@ class ItemExercicioControllers {
           errors: ['item não encontrado'],
         });
       }
-      
+
       await ItemExercicio.destroy();
 
       return res.status(200).json({

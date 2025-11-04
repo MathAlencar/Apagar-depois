@@ -4,7 +4,7 @@ class SessaoTreinoControllers {
 
   async store(req, res) {
     try {
-        
+
       const {identificador, titulo, ordem} = req.body;
 
       const body = {
@@ -50,7 +50,7 @@ class SessaoTreinoControllers {
           errors: ['Sessão não encontrada'],
         });
       }
-      
+
       const newSessaoTreino = await sessaoTreino.update(req.body);
 
       return res.status(200).json(newSessaoTreino);
@@ -87,7 +87,7 @@ class SessaoTreinoControllers {
           errors: ['sessão não encontrado'],
         });
       }
-      
+
       await sessaoTreino.destroy();
 
       return res.status(200).json({

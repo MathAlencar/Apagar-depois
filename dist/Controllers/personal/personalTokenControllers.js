@@ -32,7 +32,7 @@ class TokenControllersPersonal {
         expiresIn: process.env.TOKEN_EXPIRATION,
       });
 
-      return res.status(200).json({ token });
+      return res.status(200).json({ token, id });
     } catch (e) {
       return res.status(400).json({
         errors: _optionalChain([e, 'access', _ => _.errors, 'optionalAccess', _2 => _2.map, 'call', _3 => _3((err) => err.message)]) || [e.message],

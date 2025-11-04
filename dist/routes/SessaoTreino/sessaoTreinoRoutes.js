@@ -2,7 +2,6 @@
 var _sessaoTreinoControllers = require('../../Controllers/sessaoTreino/sessaoTreinoControllers'); var _sessaoTreinoControllers2 = _interopRequireDefault(_sessaoTreinoControllers);
 var _personalLoginRiquered = require('../../middlewares/personalLoginRiquered'); var _personalLoginRiquered2 = _interopRequireDefault(_personalLoginRiquered);
 
-
 const routes = _express.Router.call(void 0, );
 
 routes.post('/:id/', _personalLoginRiquered2.default, _sessaoTreinoControllers2.default.store); // Cadastrar plano de treino.
