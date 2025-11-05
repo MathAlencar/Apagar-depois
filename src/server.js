@@ -3,5 +3,5 @@ import app from './App.js'; // Ele já está sendo exportado e executado ao mesm
 const port = 3018;
 
 app.listen(port, () => {
-  console.log(`O App está rodando na porta ${port}...`);
+  console.log(`O App está rodando nsa porta ${port}...`);
 });

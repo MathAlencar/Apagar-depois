@@ -3,5 +3,5 @@
 const port = 3018;
 
 _Appjs2.default.listen(port, () => {
-  console.log(`O App está rodando na porta ${port}...`);
+  console.log(`O App está rodando nsa porta ${port}...`);
 });
