@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documentos Excel - Downloads</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    
+    <main class="container">
+      <header class="header">
+        <h1>Documentos Excel</h1>
+        <p class="subtitle">Baixe os arquivos disponíveis.</p>
+      </header>
+
+      <section class="list-section">
+        <div class="list-header">
+          <h2>Arquivos para download</h2>
+          <div id="status" class="status">Carregando lista…</div>
+        </div>
+        <div class="filters">
+          <div class="filter-row">
+            <label for="cpfSearch">CPF</label>
+            <input id="cpfSearch" type="text" inputmode="numeric" placeholder="Digite o CPF (somente números)">
+          </div>
+          <div class="filter-row">
+            <label for="dateFrom">Data inicial</label>
+            <input id="dateFrom" type="date">
+          </div>
+          <div class="filter-row">
+            <label for="dateTo">Data final</label>
+            <input id="dateTo" type="date">
+          </div>
+          <div class="filter-row">
+            <label for="sortOrder">Ordenar</label>
+            <select id="sortOrder">
+              <option value="desc">Mais recentes primeiro</option>
+              <option value="asc">Mais antigos primeiro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pagination">
+          <button id="prevPage" type="button" class="page-btn" aria-label="Página anterior">◀</button>
+          <div id="pageInfo" class="page-info">—</div>
+          <button id="nextPage" type="button" class="page-btn" aria-label="Próxima página">▶</button>
+        </div>
+        <ul id="fileList" class="file-list" aria-live="polite"></ul>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
+
+

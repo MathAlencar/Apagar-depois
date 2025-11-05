@@ -25,5 +25,7 @@ module.exports = {
     'no-use-before-define': 'off',
     'space-before-blocks': 'off',
     'Unexpected token': 'off',
+    'max-classes-per-file': 'off',
+    'import/extensions': 'off'
   },
 };

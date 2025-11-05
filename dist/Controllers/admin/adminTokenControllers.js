@@ -1,5 +1,5 @@
 "use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }var _jsonwebtoken = require('jsonwebtoken'); var _jsonwebtoken2 = _interopRequireDefault(_jsonwebtoken);
-var _Administrador = require('../../Models/Administrador'); var _Administrador2 = _interopRequireDefault(_Administrador);
+var _Administradorjs = require('../../Models/Administrador.js'); var _Administradorjs2 = _interopRequireDefault(_Administradorjs);
 
 class TokenControllers {
   async store(req, res) {
@@ -12,7 +12,7 @@ class TokenControllers {
         });
       }
 
-      const user = await _Administrador2.default.findOne({ where: { email } });
+      const user = await _Administradorjs2.default.findOne({ where: { email } });
 
       if (!user) {
         return res.status(404).json({

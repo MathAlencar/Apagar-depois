@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Acesso administrativo</h1>
+        <p class="subtitle">Entre para acessar os documentos protegidos.</p>
+      </header>
+
+      <section class="list-section" style="margin-top:22px">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px;padding:12px 12px 0">
+          <div class="filter-row">
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="admin@exemplo.com" />
+          </div>
+          <div class="filter-row">
+            <label for="password">Senha</label>
+            <input id="password" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;justify-content:flex-end;padding:12px">
+          <button id="loginBtn" type="button" class="open-folder">Entrar</button>
+          <div id="feedback" class="status" style="flex:1;text-align:left;color:#fca5a5"></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function(){
+        const TOKEN_KEY = 'adminAuthToken';
+        function setToken(t){ try{ localStorage.setItem(TOKEN_KEY, t); }catch{} }
+        function getToken(){ try{ return localStorage.getItem(TOKEN_KEY)||''; }catch{ return ''; } }
+
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const feedback = document.getElementById('feedback');
+
+        // Se já estiver logado, vai para a página principal
+        if (getToken()) {
+          window.location.href = './index.html';
+          return;
+        }
+
+        async function doLogin(){
+          const e = (email.value||'').trim();
+          const p = (password.value||'').trim();
+          if (!e || !p) { feedback.textContent = 'Informe email e senha.'; return; }
+          feedback.textContent = '';
+          loginBtn.disabled = true; loginBtn.textContent = 'Entrando…';
+          try{
+            const res = await fetch('/token', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ email:e, password:p })});
+            if(!res.ok){ feedback.textContent = 'Falha no login. Verifique as credenciais.'; return; }
+            const data = await res.json();
+            if (!data || !data.token) { feedback.textContent = 'Resposta inválida do servidor.'; return; }
+            setToken(data.token);
+            window.location.href = './index.html';
+          }catch(err){
+            feedback.textContent = 'Erro de rede ao autenticar.';
+          }finally{
+            loginBtn.disabled = false; loginBtn.textContent = 'Entrar';
+          }
+        }
+
+        loginBtn.addEventListener('click', doLogin);
+        password.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ doLogin(); }});
+      })();
+    </script>
+  </body>
+  </html>
+
+

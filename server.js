@@ -1,4 +1,4 @@
-import app from './App'; // Ele já está sendo exportado e executado ao mesmo tempo.
+import app from './App.js'; // Ele já está sendo exportado e executado ao mesmo tempo.
 
 const port = 3018;
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
@@ -16,17 +17,30 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31.0",
     "express": "^4.21.2",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "sequelize-cli": "^6.6.2",
     "sucrase": "^3.35.0"
   },
   "dependencies": {
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
+    "canvas": "^3.2.0",
+    "chart": "^0.1.2",
+    "chart.js": "^4.5.1",
+    "chat.js": "^1.0.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
+    "express-rate-limit": "^8.2.1",
+    "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.4.0",
     "multer": "^1.4.5-lts.1",
-    "sequelize": "^6.37.5"
+    "node-fetch": "^3.3.2",
+    "path": "^0.12.7",
+    "puppeteer": "^24.28.0",
+    "sequelize": "^6.37.5",
+    "serverless-http": "^4.0.0",
+    "xlsx": "^0.18.5"
   }
 }

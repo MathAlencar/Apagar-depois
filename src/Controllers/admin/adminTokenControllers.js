@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Administrador from '../../Models/Administrador';
+import Administrador from '../../Models/Administrador.js';
 
 class TokenControllers {
   async store(req, res) {

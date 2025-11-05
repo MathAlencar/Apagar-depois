@@ -1,4 +1,4 @@
-import Administrador from '../../Models/Administrador';
+import Administrador from '../../Models/Administrador.js';
 
 // Classe responsável por manipular novos usuários/administradores.
 class AdministradorControllers {

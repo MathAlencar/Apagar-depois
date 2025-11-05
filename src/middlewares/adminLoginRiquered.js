@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import Administrador from '../Models/Administrador';
+import Administrador from '../Models/Administrador.js';
 
 export default async (req, res, next) => {
   const { authorization } = req.headers;
