@@ -18,8 +18,8 @@ var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _Toke
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
 // __dirname em ESM
-const __filename = _url.fileURLToPath.call(void 0, import.meta.url);
-const __dirname = _path2.default.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 class App {
   constructor() {
