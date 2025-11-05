@@ -1,6 +1,6 @@
 import app from './App.js'; // Ele já está sendo exportado e executado ao mesmo tempo.
 
-const port = 3018;
+const port = 3063;
 
 app.listen(port, () => {
   console.log(`O App está rodando nsa porta ${port}...`);
