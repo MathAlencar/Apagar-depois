@@ -17,6 +17,8 @@ var _administradorRoutesjs = require('./routes/administrador/administradorRoutes
 var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _TokenRoutesjs2 = _interopRequireDefault(_TokenRoutesjs);
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
+const PUBLIC_DIR = _path2.default.join(__dirname, '../Front-end/Front-end');
+
 // __dirname em ESM
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -34,10 +36,17 @@ class App {
     this.app.use(_express2.default.json());
 
     // arquivos estáticos do front-end
-    this.app.use(_express2.default.static(_path2.default.join(__dirname, './Front-end/Front-end')));
+    // this.app.use(express.static(path.join(__dirname, './Front-end/Front-end')));
+
+    // 🔧 servir estáticos da pasta correta
+    this.app.use(_express2.default.static(PUBLIC_DIR));
   }
 
   routes() {
+    this.app.get('/', (req, res) => {
+      res.sendFile(_path2.default.join(PUBLIC_DIR, 'index.html'));
+    });
+
     this.app.use('/admin', _administradorRoutesjs2.default);
     this.app.use('/token', _TokenRoutesjs2.default);
     this.app.use('/', _rpaRoutesjs2.default);

@@ -17,6 +17,8 @@ import AdminRoutes from './routes/administrador/administradorRoutes.js';
 import AdmintokenRoutes from './routes/administrador/TokenRoutes.js';
 import RpaRoutes from './routes/rpaRoutes.js';
 
+const PUBLIC_DIR = path.join(__dirname, '../Front-end/Front-end');
+
 // __dirname em ESM
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -34,10 +36,17 @@ class App {
     this.app.use(express.json());
 
     // arquivos estáticos do front-end
-    this.app.use(express.static(path.join(__dirname, './Front-end/Front-end')));
+    // this.app.use(express.static(path.join(__dirname, './Front-end/Front-end')));
+
+    // 🔧 servir estáticos da pasta correta
+    this.app.use(express.static(PUBLIC_DIR));
   }
 
   routes() {
+    this.app.get('/', (req, res) => {
+      res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+    });
+
     this.app.use('/admin', AdminRoutes);
     this.app.use('/token', AdmintokenRoutes);
     this.app.use('/', RpaRoutes);

@@ -417,7 +417,7 @@ _dotenv2.default.config();
 
         const dadosToken = await this.autenticandoToken(); // RefreshTOken sendo autenticado aqui.
 
-        const periodos = functions.getUltimos24Meses(); // Capturando os últimos 12 meses a partir da data atual;
+        const periodos = functions.getUltimos24Meses(); // Capturando os últimos 24 meses a partir da data atual;
 
 
         for (const { year, month } of periodos) {

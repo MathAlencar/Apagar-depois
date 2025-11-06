@@ -227,7 +227,7 @@ class CadastroControllers {
       // Inicializando a api do bacen
       const bacen = new (0, _APIChamadasjs.ApiBacen)();
 
-      const data = await bacen.main('82538522153'); // Colocar essa linha de código em Store.
+      const data = await bacen.main('04040602935'); // Colocar essa linha de código em Store.
 
       return res.status(200).json({
           data,

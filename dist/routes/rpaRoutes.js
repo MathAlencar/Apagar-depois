@@ -11,7 +11,7 @@ router.get('/rpa-otimizado/', _adminLoginRiqueredjs2.default, _rpaControllersjs2
 router.get('/teste/', _rpaControllersjs2.default.teste.bind(_rpaControllersjs2.default));
 
 // Endpoints para o upload de gráfico e imagem para o Ploomes - TESTES
-// router.get('/busca/bacen', adminLoginRiquered, CadastroControllers.searchBacen.bind(CadastroControllers));
+router.get('/busca/bacen',_rpaControllersjs2.default.searchBacen.bind(_rpaControllersjs2.default));
 // router.get('/upload-to-ploomes', adminLoginRiquered, uploadMulti, CadastroControllers.uploadToPloomes.bind(CadastroControllers));
 // router.get('/teste-grafico-upload/:cpf/:dealId', adminLoginRiquered, CadastroControllers.testeGraficoUpload.bind(CadastroControllers));
 // router.get('/grafico/:cpf', adminLoginRiquered, CadastroControllers.gerarGraficoEvolucao.bind(CadastroControllers));
