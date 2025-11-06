@@ -18,6 +18,7 @@ import AdmintokenRoutes from './routes/administrador/TokenRoutes.js';
 import RpaRoutes from './routes/rpaRoutes.js';
 
 const PUBLIC_DIR = path.join(__dirname, '../Front-end/Front-end');
+const PUBLIC_DIR_UPLOAD = path.join(PUBLIC_DIR, 'Documentos Excel');
 
 // __dirname em ESM
 // const __filename = fileURLToPath(import.meta.url);
@@ -38,8 +39,9 @@ class App {
     // arquivos estáticos do front-end
     // this.app.use(express.static(path.join(__dirname, './Front-end/Front-end')));
 
-    // 🔧 servir estáticos da pasta correta
+     // Servir o front-end e também os arquivos de Excel
     this.app.use(express.static(PUBLIC_DIR));
+    this.app.use('/excel', express.static(PUBLIC_DIR_UPLOAD));
   }
 
   routes() {
@@ -47,13 +49,24 @@ class App {
       res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
     });
 
-    this.app.use('/admin', AdminRoutes);
+    // this.app.use('/admin', AdminRoutes);
     this.app.use('/token', AdmintokenRoutes);
     this.app.use('/', RpaRoutes);
 
+    // this.app.get('/excel/manifest.json', adminLoginRequired, (req, res) => {
+    //   const dir = path.join(__dirname, './Front-end/Documentos Excel');
+    //   fs.readdir(dir, (err, files) => {
+    //     if (err) return res.status(500).json({ error: 'Erro ao ler pasta' });
+    //     const onlyExcel = files.filter(f =>
+    //       /\.(xls|xlsx|xlsm|xlsb|xltx|xltm|xlam|csv)$/i.test(f)
+    //     );
+    //     res.json(onlyExcel);
+    //   });
+    // });
+
+    // 🔧 Listar arquivos Excel (rota protegida)
     this.app.get('/excel/manifest.json', adminLoginRequired, (req, res) => {
-      const dir = path.join(__dirname, './Front-end/Documentos Excel');
-      fs.readdir(dir, (err, files) => {
+      fs.readdir(PUBLIC_DIR_UPLOAD, (err, files) => {
         if (err) return res.status(500).json({ error: 'Erro ao ler pasta' });
         const onlyExcel = files.filter(f =>
           /\.(xls|xlsx|xlsm|xlsb|xltx|xltm|xlam|csv)$/i.test(f)
@@ -62,10 +75,11 @@ class App {
       });
     });
 
+    // 🔧 Download de arquivos Excel (rota protegida)
     this.app.use(
-      '/excel/download/',
+      '/excel/download',
       adminLoginRequired,
-      express.static(path.join(__dirname, './Front-end/Documentos Excel'))
+      express.static(PUBLIC_DIR_UPLOAD)
     );
   }
 }

@@ -18,6 +18,7 @@ var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _Toke
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
 const PUBLIC_DIR = _path2.default.join(__dirname, '../Front-end/Front-end');
+const PUBLIC_DIR_UPLOAD = _path2.default.join(PUBLIC_DIR, 'Documentos Excel');
 
 // __dirname em ESM
 // const __filename = fileURLToPath(import.meta.url);
@@ -38,8 +39,9 @@ class App {
     // arquivos estáticos do front-end
     // this.app.use(express.static(path.join(__dirname, './Front-end/Front-end')));
 
-    // 🔧 servir estáticos da pasta correta
+     // Servir o front-end e também os arquivos de Excel
     this.app.use(_express2.default.static(PUBLIC_DIR));
+    this.app.use('/excel', _express2.default.static(PUBLIC_DIR_UPLOAD));
   }
 
   routes() {
@@ -47,13 +49,24 @@ class App {
       res.sendFile(_path2.default.join(PUBLIC_DIR, 'index.html'));
     });
 
-    this.app.use('/admin', _administradorRoutesjs2.default);
+    // this.app.use('/admin', AdminRoutes);
     this.app.use('/token', _TokenRoutesjs2.default);
     this.app.use('/', _rpaRoutesjs2.default);
 
+    // this.app.get('/excel/manifest.json', adminLoginRequired, (req, res) => {
+    //   const dir = path.join(__dirname, './Front-end/Documentos Excel');
+    //   fs.readdir(dir, (err, files) => {
+    //     if (err) return res.status(500).json({ error: 'Erro ao ler pasta' });
+    //     const onlyExcel = files.filter(f =>
+    //       /\.(xls|xlsx|xlsm|xlsb|xltx|xltm|xlam|csv)$/i.test(f)
+    //     );
+    //     res.json(onlyExcel);
+    //   });
+    // });
+
+    // 🔧 Listar arquivos Excel (rota protegida)
     this.app.get('/excel/manifest.json', _adminLoginRiqueredjs2.default, (req, res) => {
-      const dir = _path2.default.join(__dirname, './Front-end/Documentos Excel');
-      _fs2.default.readdir(dir, (err, files) => {
+      _fs2.default.readdir(PUBLIC_DIR_UPLOAD, (err, files) => {
         if (err) return res.status(500).json({ error: 'Erro ao ler pasta' });
         const onlyExcel = files.filter(f =>
           /\.(xls|xlsx|xlsm|xlsb|xltx|xltm|xlam|csv)$/i.test(f)
@@ -62,10 +75,11 @@ class App {
       });
     });
 
+    // 🔧 Download de arquivos Excel (rota protegida)
     this.app.use(
-      '/excel/download/',
+      '/excel/download',
       _adminLoginRiqueredjs2.default,
-      _express2.default.static(_path2.default.join(__dirname, './Front-end/Documentos Excel'))
+      _express2.default.static(PUBLIC_DIR_UPLOAD)
     );
   }
 }
