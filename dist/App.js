@@ -18,7 +18,7 @@ var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _Toke
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
 const PUBLIC_DIR = _path2.default.join(__dirname, '../Front-end/Front-end');
-const PUBLIC_DIR_UPLOAD = _path2.default.join(PUBLIC_DIR, 'Documentos Excel');
+const PUBLIC_DIR_UPLOAD = _path2.default.join(__dirname, '../Front-end/Documentos Excel/');
 
 // __dirname em ESM
 // const __filename = fileURLToPath(import.meta.url);
@@ -41,7 +41,7 @@ class App {
 
      // Servir o front-end e também os arquivos de Excel
     this.app.use(_express2.default.static(PUBLIC_DIR));
-    this.app.use('/excel', _express2.default.static(PUBLIC_DIR_UPLOAD));
+    this.app.use('/excel/', _express2.default.static(PUBLIC_DIR_UPLOAD));
   }
 
   routes() {
