@@ -217,7 +217,7 @@ class CadastroControllers {
   async teste(req,res){
     try{
       return res.status(200).json({
-        "msg": "dessu bom"
+        "msg": "dessu bossm"
       })
 
     }catch(e){
