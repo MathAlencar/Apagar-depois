@@ -102,12 +102,19 @@ class APIGeradorExcelSCR {
   _converterDadosBacenParaAPI(dataBacen) {
     const periodosConsulta = [];
 
-    // Processar cada período dos dados do Bacen
+    // // Processar cada período dos dados do Bacen
+    // for (const item of dataBacen) {
+    //   if (item.dados && !item.dados.error && !item.dados.Erro) {
+    //     // Os dados já contêm Erro, MensagemOperador e Periodo
+    //     // Apenas incluir os dados diretamente
+    //     periodosConsulta.push(item.dados);
+    //   }
+    // }
+
+    // Processar cada período dos dados do Bacen -> Ordem invertida para se ajustar ao bacen.
     for (const item of dataBacen) {
       if (item.dados && !item.dados.error && !item.dados.Erro) {
-        // Os dados já contêm Erro, MensagemOperador e Periodo
-        // Apenas incluir os dados diretamente
-        periodosConsulta.push(item.dados);
+        periodosConsulta.unshift(item.dados);
       }
     }
 
@@ -372,12 +379,13 @@ class CadastroControllers {
           const objeto = new Objetos();
 
           // Extrair CPFs dos tomadores
-          const cpfTomadores = [
-            otherProps['deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5'],
-            otherProps['deal_A9AC9C2E-633A-480F-8689-C93D930F6847'],
-            otherProps['deal_AF1A346F-3AE9-428B-9FF9-A6317AC02FD3'],
-            otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D']
+          const cpfCnpjTomadores = [
+            otherProps['deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5'] || otherProps['deal_E95722A2-7AAE-4EBE-B632-1C954764894C'],
+            otherProps['deal_A9AC9C2E-633A-480F-8689-C93D930F6847'] || otherProps['deal_0C3DA592-AE6D-4DE2-A9B3-A8251CD08F00'],
+            otherProps['deal_AF1A346F-3AE9-428B-9FF9-A6317AC02FD3'] || otherProps['deal_5B70C640-6C0C-48F6-ADA7-F7DE2F0A470D'],
+            otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D'] || otherProps['deal_D8603767-5A19-46DC-9B88-2F000BD01096']
           ];
+
 
           // Processar tomadores sequencialmente para evitar rate limit
           const processarTomador = async (cpf, tomadorIndex) => {
@@ -523,7 +531,7 @@ class CadastroControllers {
           };
 
           // Processar tomadores sequencialmente para evitar rate limit
-          const tomadoresComCPF = cpfTomadores.map((cpf, index) => ({ cpf, index })).filter(t => t.cpf);
+          const tomadoresComCPF = cpfCnpjTomadores.map((cpf, index) => ({ cpf, index })).filter(t => t.cpf);
           const resultados = [];
           const ArrayDividas = []; // Array para armazenar os dados das dívidas
 

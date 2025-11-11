@@ -64,7 +64,7 @@ _chartjs.Chart.register(..._chartjs.registerables);
           plugins: {
             title: {
               display: true,
-              text: `Histórico de Dívidas - CPF: ${cpf}`,
+              text: `Histórico de Dívidas - CPF/CNPJ: ${cpf}`,
               font: {
                 size: 16,
                 weight: 'bold'

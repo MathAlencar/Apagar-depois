@@ -25,10 +25,16 @@ _dotenv2.default.config();
                 `&$expand=OtherProperties(` +
                 `$filter=` +
                 `FieldKey eq 'deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5' or ` +
+
                 `FieldKey eq 'deal_A9AC9C2E-633A-480F-8689-C93D930F6847' or ` +
                 `FieldKey eq 'deal_AF1A346F-3AE9-428B-9FF9-A6317AC02FD3' or ` +
                 `FieldKey eq 'deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D' or ` +
-                `FieldKey eq 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391'` +
+                `FieldKey eq 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391' or ` +
+
+                `FieldKey eq 'deal_E95722A2-7AAE-4EBE-B632-1C954764894C' or ` +
+                `FieldKey eq 'deal_0C3DA592-AE6D-4DE2-A9B3-A8251CD08F00' or ` +
+                `FieldKey eq 'deal_5B70C640-6C0C-48F6-ADA7-F7DE2F0A470D' or ` +
+                `FieldKey eq 'deal_D8603767-5A19-46DC-9B88-2F000BD01096'` +
                 `)` +
                 `&$filter=StatusId eq 1 and StageId eq 185072`;
 
