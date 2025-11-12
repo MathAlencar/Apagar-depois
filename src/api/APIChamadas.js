@@ -88,7 +88,7 @@ export class CallOptions{
                 "OtherProperties": [
 
                     // --- Processado 📌 --- //
-                    { "FieldKey": "deal_8202EECD-41FA-4AAD-9927-90105C5B9391", "BoolValue": true },
+                    { "FieldKey": "deal_8202EECD-41FA-4AAD-9927-90105C5B9391", "BoolValue": false },
 
                     // --- Prujuizo 📌 --- //
                     { "FieldKey": "deal_EB570764-56BF-4F80-82A4-029F5B8630D6", "DecimalValue":  Dividas[0]?.prejuizo }, // T1

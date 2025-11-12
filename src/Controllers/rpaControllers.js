@@ -371,7 +371,7 @@ class CadastroControllers {
             return null
           }
 
-          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == false){
+          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
           // console.log(`🔄 Processando Deal ${id}...`);
 
           // Inicializar APIs
