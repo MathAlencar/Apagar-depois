@@ -140,8 +140,8 @@
     meta.style.color = 'var(--muted)';
     meta.style.fontSize = '12px';
     const dateStr = fileObj.date ? formatDateKeyLocal(fileObj.date) : 'sem data';
-    const cpfStr = fileObj.cpf || 'sem CPF';
-    meta.textContent = `Data: ${dateStr} • CPF: ${cpfStr}`;
+    const cpfStr = fileObj.cpf || 'sem CPF/CNPJ';
+    meta.textContent = `Data: ${dateStr} • ${cpfStr}`;
     nameWrap.appendChild(meta);
 
     const link = document.createElement('a');
