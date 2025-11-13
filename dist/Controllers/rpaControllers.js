@@ -130,86 +130,193 @@ class APIGeradorExcelSCR {
    * @param {string} cpfCliente - CPF do cliente
    * @returns {Promise<Object>} Resultado da operação
    */
+
+  // async gerarExcelSCR(dataBacen, cpfCliente) {
+  //   try {
+  //     // console.log(`🚀 Gerando Excel SCR via API para CPF ${cpfCliente}...`);
+
+  //     // Criar pasta se necessário
+  //     this._criarPastaSeNaoExistir();
+
+  //     // Converter dados do Bacen para formato da API
+  //     const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+
+  //     if (dadosAPI.periodosConsulta.length === 0) {
+  //       throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+  //     }
+
+  //     // Gerar nome do arquivo
+  //     const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
+  //     const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
+
+  //     // console.log(`📄 Enviando ${dadosAPI.periodosConsulta.length} períodos para API...`);
+
+  //     // Fazer requisição POST
+  //     const response = await axios.post(this.apiUrl, dadosAPI, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  //       },
+  //       responseType: 'arraybuffer',
+  //       timeout: this.timeout
+  //     });
+
+  //     // console.log(`✅ Resposta recebida: ${response.status} ${response.statusText}`);
+  //     // console.log(`📏 Tamanho da resposta: ${response.data.length} bytes`);
+
+  //     // Salvar arquivo Excel
+  //     fs.writeFileSync(caminhoCompleto, response.data);
+
+  //     // Verificar se arquivo foi salvo
+  //     const stats = fs.statSync(caminhoCompleto);
+
+  //     // console.log('🎉 Excel SCR gerado com sucesso!');
+  //     // console.log(`📁 Local: ${caminhoCompleto}`);
+  //     // console.log(`📏 Tamanho: ${stats.size} bytes`);
+
+  //     return {
+  //       success: true,
+  //       arquivo: caminhoCompleto,
+  //       nomeArquivo: nomeArquivo,
+  //       tamanho: stats.size,
+  //       dataGeracao: new Date().toISOString(),
+  //       cpfCliente: cpfCliente,
+  //       periodosProcessados: dadosAPI.periodosConsulta.length
+  //     };
+
+  //   } catch (error) {
+  //     console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
+
+  //     let erroDetalhado = error.message;
+  //     let statusCode = null;
+
+  //     if (error.response) {
+  //       statusCode = error.response.status;
+  //       erroDetalhado = `HTTP ${statusCode}: ${error.message}`;
+
+  //       // Tentar salvar resposta de erro se for texto
+  //       if (error.response.data && typeof error.response.data === 'string') {
+  //         const erroArquivo = path.join(this.pastaDocumento, `erro_api_${cpfCliente}_${Date.now()}.txt`);
+  //         fs.writeFileSync(erroArquivo, error.response.data);
+  //         // console.log(`📄 Resposta de erro salva em: ${erroArquivo}`);
+  //       }
+  //     }
+
+  //     return {
+  //       success: false,
+  //       erro: erroDetalhado,
+  //       statusCode: statusCode,
+  //       cpfCliente: cpfCliente,
+  //       arquivo: null
+  //     };
+  //   }
+  // }
+
   async gerarExcelSCR(dataBacen, cpfCliente) {
-    try {
-      // console.log(`🚀 Gerando Excel SCR via API para CPF ${cpfCliente}...`);
+  try {
+    // Criar pasta se necessário
+    this._criarPastaSeNaoExistir();
 
-      // Criar pasta se necessário
-      this._criarPastaSeNaoExistir();
+    // Converter dados do Bacen para formato da API
+    const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
 
-      // Converter dados do Bacen para formato da API
-      const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+    if (dadosAPI.periodosConsulta.length === 0) {
+      throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+    }
 
-      if (dadosAPI.periodosConsulta.length === 0) {
-        throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+    // Gerar nome do arquivo
+    const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
+    const caminhoCompleto = _path2.default.join(this.pastaDocumento, nomeArquivo);
+
+    // Log opcional para debug
+    // console.dir(dadosAPI, { depth: null });
+
+    // Fazer requisição POST
+    const response = await _axios2.default.post(this.apiUrl, dadosAPI, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      },
+      responseType: 'arraybuffer',
+      timeout: this.timeout
+    });
+
+    const contentType = (response.headers['content-type'] || '').toLowerCase();
+    const buffer = Buffer.from(response.data);
+
+    // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
+    if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+      const texto = buffer.toString('utf8');
+      let msgErro = texto;
+
+      // tenta parsear como JSON para pegar { error: "..." }
+      try {
+        const json = JSON.parse(texto);
+        if (json.error) msgErro = json.error;
+      } catch (_) {
+        // se não for JSON, mantém texto cru mesmo
       }
 
-      // Gerar nome do arquivo
-      const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
-      const caminhoCompleto = _path2.default.join(this.pastaDocumento, nomeArquivo);
-
-      // console.log(`📄 Enviando ${dadosAPI.periodosConsulta.length} períodos para API...`);
-
-      // Fazer requisição POST
-      const response = await _axios2.default.post(this.apiUrl, dadosAPI, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        },
-        responseType: 'arraybuffer',
-        timeout: this.timeout
-      });
-
-      // console.log(`✅ Resposta recebida: ${response.status} ${response.statusText}`);
-      // console.log(`📏 Tamanho da resposta: ${response.data.length} bytes`);
-
-      // Salvar arquivo Excel
-      _fs2.default.writeFileSync(caminhoCompleto, response.data);
-
-      // Verificar se arquivo foi salvo
-      const stats = _fs2.default.statSync(caminhoCompleto);
-
-      // console.log('🎉 Excel SCR gerado com sucesso!');
-      // console.log(`📁 Local: ${caminhoCompleto}`);
-      // console.log(`📏 Tamanho: ${stats.size} bytes`);
-
-      return {
-        success: true,
-        arquivo: caminhoCompleto,
-        nomeArquivo: nomeArquivo,
-        tamanho: stats.size,
-        dataGeracao: new Date().toISOString(),
-        cpfCliente: cpfCliente,
-        periodosProcessados: dadosAPI.periodosConsulta.length
-      };
-
-    } catch (error) {
-      console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
-
-      let erroDetalhado = error.message;
-      let statusCode = null;
-
-      if (error.response) {
-        statusCode = error.response.status;
-        erroDetalhado = `HTTP ${statusCode}: ${error.message}`;
-
-        // Tentar salvar resposta de erro se for texto
-        if (error.response.data && typeof error.response.data === 'string') {
-          const erroArquivo = _path2.default.join(this.pastaDocumento, `erro_api_${cpfCliente}_${Date.now()}.txt`);
-          _fs2.default.writeFileSync(erroArquivo, error.response.data);
-          // console.log(`📄 Resposta de erro salva em: ${erroArquivo}`);
-        }
-      }
+      console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
 
       return {
         success: false,
-        erro: erroDetalhado,
-        statusCode: statusCode,
-        cpfCliente: cpfCliente,
+        erro: msgErro,
+        statusCode: response.status,
+        cpfCliente,
         arquivo: null
       };
     }
+
+    // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
+    _fs2.default.writeFileSync(caminhoCompleto, buffer);
+
+    const stats = _fs2.default.statSync(caminhoCompleto);
+
+    return {
+      success: true,
+      arquivo: caminhoCompleto,
+      nomeArquivo: nomeArquivo,
+      tamanho: stats.size,
+      dataGeracao: new Date().toISOString(),
+      cpfCliente: cpfCliente,
+      periodosProcessados: dadosAPI.periodosConsulta.length
+    };
+
+  } catch (error) {
+    console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
+
+    let erroDetalhado = error.message;
+    let statusCode = null;
+
+    if (error.response) {
+      statusCode = error.response.status;
+
+      // trata data mesmo sendo arraybuffer
+      let textoErro = '';
+      if (error.response.data) {
+        if (error.response.data instanceof ArrayBuffer || Buffer.isBuffer(error.response.data)) {
+          textoErro = Buffer.from(error.response.data).toString('utf8');
+        } else if (typeof error.response.data === 'string') {
+          textoErro = error.response.data;
+        } else {
+          textoErro = JSON.stringify(error.response.data);
+        }
+      }
+
+      erroDetalhado = `HTTP ${statusCode}: ${textoErro}`;
+    }
+
+    return {
+      success: false,
+      erro: erroDetalhado,
+      statusCode: statusCode,
+      cpfCliente: cpfCliente,
+      arquivo: null
+    };
   }
+  }
+
 }
 
 class CadastroControllers {
@@ -307,10 +414,10 @@ class CadastroControllers {
         ploomes: data,
       });
     } catch (err) {
-      console.error(_optionalChain([err, 'access', _ => _.response, 'optionalAccess', _2 => _2.data]) || err.message);
+      console.error(_optionalChain([err, 'access', _2 => _2.response, 'optionalAccess', _3 => _3.data]) || err.message);
       return res.status(500).json({
         error: 'Falha ao enviar imagem para o Ploomes',
-        detail: _optionalChain([err, 'access', _3 => _3.response, 'optionalAccess', _4 => _4.data]) || err.message,
+        detail: _optionalChain([err, 'access', _4 => _4.response, 'optionalAccess', _5 => _5.data]) || err.message,
       });
     }
   }
@@ -371,7 +478,7 @@ class CadastroControllers {
             return null
           }
 
-          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
+          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == false && id == 802271401){
           // console.log(`🔄 Processando Deal ${id}...`);
 
           // Inicializar APIs
@@ -443,7 +550,7 @@ class CadastroControllers {
                       return resultado;
                     }
                   } catch (error) {
-                    if (_optionalChain([error, 'access', _5 => _5.response, 'optionalAccess', _6 => _6.status]) === 429 && i < tentativas - 1) {
+                    if (_optionalChain([error, 'access', _6 => _6.response, 'optionalAccess', _7 => _7.status]) === 429 && i < tentativas - 1) {
                       // console.log(`⏳ Rate limit atingido, aguardando 2s antes da tentativa ${i + 2}...`);
                       await new Promise(resolve => setTimeout(resolve, 2000));
                       continue;
@@ -468,7 +575,7 @@ class CadastroControllers {
                       return resultado;
                     }
                   } catch (error) {
-                    if (_optionalChain([error, 'access', _7 => _7.response, 'optionalAccess', _8 => _8.status]) === 429 && i < tentativas - 1) {
+                    if (_optionalChain([error, 'access', _8 => _8.response, 'optionalAccess', _9 => _9.status]) === 429 && i < tentativas - 1) {
                       // console.log(`⏳ Rate limit atingido, aguardando 2s antes da tentativa ${i + 2}...`);
                       await new Promise(resolve => setTimeout(resolve, 2000));
                       continue;
@@ -492,11 +599,11 @@ class CadastroControllers {
                 resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpf);
 
                 if (resultadoExcel.success) {
-                  // console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
-                  // console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
-                  // console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+                  console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
+                  console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+                  console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
                 } else {
-                  // console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
+                  console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
                 }
               } catch (errorExcel) {
                 console.error(`❌ Erro na integração Excel SCR: ${errorExcel.message}`);
@@ -509,7 +616,7 @@ class CadastroControllers {
                 uploadResult,
                 updateResult,
                 dadosDividas: retornoJson, // Incluir dados das dívidas para atualização posterior
-                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _9 => _9.success]) ? {
+                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _10 => _10.success]) ? {
                   arquivo: resultadoExcel.arquivo,
                   nomeArquivo: resultadoExcel.nomeArquivo,
                   tamanho: resultadoExcel.tamanho,
@@ -539,7 +646,7 @@ class CadastroControllers {
             resultados.push(resultado);
 
             // Adicionar dados das dívidas ao array se o processamento foi bem-sucedido
-            if (_optionalChain([resultado, 'optionalAccess', _10 => _10.success]) && resultado.dadosDividas) {
+            if (_optionalChain([resultado, 'optionalAccess', _11 => _11.success]) && resultado.dadosDividas) {
               ArrayDividas.push(objeto.criaTomador(
                 resultado.cpf,
                 resultado.dadosDividas.creditoRotativoVencido,
@@ -593,7 +700,7 @@ class CadastroControllers {
           }
 
           // Log dos resultados
-          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _11 => _11.success])).length;
+          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _12 => _12.success])).length;
           // console.log(`📊 Deal ${id}: ${sucessos}/${tomadoresComCPF.length} tomadores processados com sucesso`);
 
           return {
@@ -641,11 +748,11 @@ class CadastroControllers {
       // Resumo final
       const totalDeals = data.length;
       const dealsProcessados = todosOsResultados.length;
-      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _12 => _12.totalTomadores]) || 0), 0);
-      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _13 => _13.sucessos]) || 0), 0);
+      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _13 => _13.totalTomadores]) || 0), 0);
+      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _14 => _14.sucessos]) || 0), 0);
       const totalExcelSCR = todosOsResultados.reduce((acc, r) => {
-        if (_optionalChain([r, 'optionalAccess', _14 => _14.resultados])) {
-          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _15 => _15.excelSCR])).length;
+        if (_optionalChain([r, 'optionalAccess', _15 => _15.resultados])) {
+          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _16 => _16.excelSCR])).length;
         }
         return acc;
       }, 0);

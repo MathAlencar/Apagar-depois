@@ -130,86 +130,193 @@ class APIGeradorExcelSCR {
    * @param {string} cpfCliente - CPF do cliente
    * @returns {Promise<Object>} Resultado da operação
    */
+
+  // async gerarExcelSCR(dataBacen, cpfCliente) {
+  //   try {
+  //     // console.log(`🚀 Gerando Excel SCR via API para CPF ${cpfCliente}...`);
+
+  //     // Criar pasta se necessário
+  //     this._criarPastaSeNaoExistir();
+
+  //     // Converter dados do Bacen para formato da API
+  //     const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+
+  //     if (dadosAPI.periodosConsulta.length === 0) {
+  //       throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+  //     }
+
+  //     // Gerar nome do arquivo
+  //     const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
+  //     const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
+
+  //     // console.log(`📄 Enviando ${dadosAPI.periodosConsulta.length} períodos para API...`);
+
+  //     // Fazer requisição POST
+  //     const response = await axios.post(this.apiUrl, dadosAPI, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  //       },
+  //       responseType: 'arraybuffer',
+  //       timeout: this.timeout
+  //     });
+
+  //     // console.log(`✅ Resposta recebida: ${response.status} ${response.statusText}`);
+  //     // console.log(`📏 Tamanho da resposta: ${response.data.length} bytes`);
+
+  //     // Salvar arquivo Excel
+  //     fs.writeFileSync(caminhoCompleto, response.data);
+
+  //     // Verificar se arquivo foi salvo
+  //     const stats = fs.statSync(caminhoCompleto);
+
+  //     // console.log('🎉 Excel SCR gerado com sucesso!');
+  //     // console.log(`📁 Local: ${caminhoCompleto}`);
+  //     // console.log(`📏 Tamanho: ${stats.size} bytes`);
+
+  //     return {
+  //       success: true,
+  //       arquivo: caminhoCompleto,
+  //       nomeArquivo: nomeArquivo,
+  //       tamanho: stats.size,
+  //       dataGeracao: new Date().toISOString(),
+  //       cpfCliente: cpfCliente,
+  //       periodosProcessados: dadosAPI.periodosConsulta.length
+  //     };
+
+  //   } catch (error) {
+  //     console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
+
+  //     let erroDetalhado = error.message;
+  //     let statusCode = null;
+
+  //     if (error.response) {
+  //       statusCode = error.response.status;
+  //       erroDetalhado = `HTTP ${statusCode}: ${error.message}`;
+
+  //       // Tentar salvar resposta de erro se for texto
+  //       if (error.response.data && typeof error.response.data === 'string') {
+  //         const erroArquivo = path.join(this.pastaDocumento, `erro_api_${cpfCliente}_${Date.now()}.txt`);
+  //         fs.writeFileSync(erroArquivo, error.response.data);
+  //         // console.log(`📄 Resposta de erro salva em: ${erroArquivo}`);
+  //       }
+  //     }
+
+  //     return {
+  //       success: false,
+  //       erro: erroDetalhado,
+  //       statusCode: statusCode,
+  //       cpfCliente: cpfCliente,
+  //       arquivo: null
+  //     };
+  //   }
+  // }
+
   async gerarExcelSCR(dataBacen, cpfCliente) {
-    try {
-      // console.log(`🚀 Gerando Excel SCR via API para CPF ${cpfCliente}...`);
+  try {
+    // Criar pasta se necessário
+    this._criarPastaSeNaoExistir();
 
-      // Criar pasta se necessário
-      this._criarPastaSeNaoExistir();
+    // Converter dados do Bacen para formato da API
+    const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
 
-      // Converter dados do Bacen para formato da API
-      const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+    if (dadosAPI.periodosConsulta.length === 0) {
+      throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+    }
 
-      if (dadosAPI.periodosConsulta.length === 0) {
-        throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+    // Gerar nome do arquivo
+    const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
+    const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
+
+    // Log opcional para debug
+    // console.dir(dadosAPI, { depth: null });
+
+    // Fazer requisição POST
+    const response = await axios.post(this.apiUrl, dadosAPI, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      },
+      responseType: 'arraybuffer',
+      timeout: this.timeout
+    });
+
+    const contentType = (response.headers['content-type'] || '').toLowerCase();
+    const buffer = Buffer.from(response.data);
+
+    // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
+    if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+      const texto = buffer.toString('utf8');
+      let msgErro = texto;
+
+      // tenta parsear como JSON para pegar { error: "..." }
+      try {
+        const json = JSON.parse(texto);
+        if (json.error) msgErro = json.error;
+      } catch (_) {
+        // se não for JSON, mantém texto cru mesmo
       }
 
-      // Gerar nome do arquivo
-      const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
-      const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
-
-      // console.log(`📄 Enviando ${dadosAPI.periodosConsulta.length} períodos para API...`);
-
-      // Fazer requisição POST
-      const response = await axios.post(this.apiUrl, dadosAPI, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        },
-        responseType: 'arraybuffer',
-        timeout: this.timeout
-      });
-
-      // console.log(`✅ Resposta recebida: ${response.status} ${response.statusText}`);
-      // console.log(`📏 Tamanho da resposta: ${response.data.length} bytes`);
-
-      // Salvar arquivo Excel
-      fs.writeFileSync(caminhoCompleto, response.data);
-
-      // Verificar se arquivo foi salvo
-      const stats = fs.statSync(caminhoCompleto);
-
-      // console.log('🎉 Excel SCR gerado com sucesso!');
-      // console.log(`📁 Local: ${caminhoCompleto}`);
-      // console.log(`📏 Tamanho: ${stats.size} bytes`);
-
-      return {
-        success: true,
-        arquivo: caminhoCompleto,
-        nomeArquivo: nomeArquivo,
-        tamanho: stats.size,
-        dataGeracao: new Date().toISOString(),
-        cpfCliente: cpfCliente,
-        periodosProcessados: dadosAPI.periodosConsulta.length
-      };
-
-    } catch (error) {
-      console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
-
-      let erroDetalhado = error.message;
-      let statusCode = null;
-
-      if (error.response) {
-        statusCode = error.response.status;
-        erroDetalhado = `HTTP ${statusCode}: ${error.message}`;
-
-        // Tentar salvar resposta de erro se for texto
-        if (error.response.data && typeof error.response.data === 'string') {
-          const erroArquivo = path.join(this.pastaDocumento, `erro_api_${cpfCliente}_${Date.now()}.txt`);
-          fs.writeFileSync(erroArquivo, error.response.data);
-          // console.log(`📄 Resposta de erro salva em: ${erroArquivo}`);
-        }
-      }
+      console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
 
       return {
         success: false,
-        erro: erroDetalhado,
-        statusCode: statusCode,
-        cpfCliente: cpfCliente,
+        erro: msgErro,
+        statusCode: response.status,
+        cpfCliente,
         arquivo: null
       };
     }
+
+    // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
+    fs.writeFileSync(caminhoCompleto, buffer);
+
+    const stats = fs.statSync(caminhoCompleto);
+
+    return {
+      success: true,
+      arquivo: caminhoCompleto,
+      nomeArquivo: nomeArquivo,
+      tamanho: stats.size,
+      dataGeracao: new Date().toISOString(),
+      cpfCliente: cpfCliente,
+      periodosProcessados: dadosAPI.periodosConsulta.length
+    };
+
+  } catch (error) {
+    console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
+
+    let erroDetalhado = error.message;
+    let statusCode = null;
+
+    if (error.response) {
+      statusCode = error.response.status;
+
+      // trata data mesmo sendo arraybuffer
+      let textoErro = '';
+      if (error.response.data) {
+        if (error.response.data instanceof ArrayBuffer || Buffer.isBuffer(error.response.data)) {
+          textoErro = Buffer.from(error.response.data).toString('utf8');
+        } else if (typeof error.response.data === 'string') {
+          textoErro = error.response.data;
+        } else {
+          textoErro = JSON.stringify(error.response.data);
+        }
+      }
+
+      erroDetalhado = `HTTP ${statusCode}: ${textoErro}`;
+    }
+
+    return {
+      success: false,
+      erro: erroDetalhado,
+      statusCode: statusCode,
+      cpfCliente: cpfCliente,
+      arquivo: null
+    };
   }
+  }
+
 }
 
 class CadastroControllers {
@@ -371,7 +478,7 @@ class CadastroControllers {
             return null
           }
 
-          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
+          if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == false && id == 802271401){
           // console.log(`🔄 Processando Deal ${id}...`);
 
           // Inicializar APIs
@@ -492,11 +599,11 @@ class CadastroControllers {
                 resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpf);
 
                 if (resultadoExcel.success) {
-                  // console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
-                  // console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
-                  // console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+                  console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
+                  console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+                  console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
                 } else {
-                  // console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
+                  console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
                 }
               } catch (errorExcel) {
                 console.error(`❌ Erro na integração Excel SCR: ${errorExcel.message}`);
