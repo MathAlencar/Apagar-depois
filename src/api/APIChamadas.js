@@ -8,7 +8,10 @@ dotenv.config();
 export class CallOptions{
     constructor(){}
 
-    // Essa API irá realizar a captura dos ID e dos CPF's do cliente.
+    /**
+     * Objetivo: Buscar deals do Ploomes com status e stage específicos, extraindo CPFs dos tomadores
+     * Como funciona: Faz requisição GET para API do Ploomes com filtros de StatusId e StageId, expande OtherProperties para pegar campos customizados com CPFs dos 4 tomadores e flag de processado, e retorna array de deals formatados
+     */
     async TakeDealOtherProperties() {
         try {
             // `/Deals?$select=Id,Title,StageId,StatusId&$expand=OtherProperties($filter=FieldKey eq 'deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5')&$filter=StatusId eq 3 and StageId eq 185072 and Id eq 802048270`,
@@ -76,7 +79,10 @@ export class CallOptions{
         }
     }
 
-    // Função responsável por atualizar os campos de dividas.
+    /**
+     * Objetivo: Atualizar todos os campos de dívidas de um deal no Ploomes
+     * Como funciona: Monta um objeto com OtherProperties contendo todos os campos de dívidas (vencido e a vencer) para os 4 tomadores, marca o deal como não processado, e faz requisição PATCH para atualizar o deal
+     */
     async UpdateData(id, ContactId, StageId, Dividas){
         try {
 
@@ -305,7 +311,10 @@ export class CallOptions{
         }
     }
 
-    // Capturando Campos de acordo com alguma palavra padrão no Title.
+    /**
+     * Objetivo: Buscar campos do Ploomes que contenham uma palavra específica no nome
+     * Como funciona: Faz requisição GET para /Fields, filtra os campos cujo nome contém o texto informado (case insensitive), e retorna array de campos encontrados
+     */
     async fieldsText(text){
         try{
             const response = await apiPloomes.get(`/Fields?$select=Id,Name,Key`, {
@@ -332,7 +341,10 @@ export class CallOptions{
         }
     }
 
-    // Essa API irá realizar a captura dos ID e dos CPF's do cliente.
+    /**
+     * Objetivo: Buscar deals do Ploomes com informações completas de contato e campos customizados
+     * Como funciona: Faz requisição GET expandindo Contact (com telefones) e OtherProperties, filtra por StatusId e StageId específicos, e retorna deals com informações de contato e campos customizados formatados
+     */
     async TakeDealFields() {
         try {
             const url =
@@ -403,6 +415,11 @@ export class CallOptions{
 
 }
 
+/**
+ * Classe para integração com API do Bacen (Sistema de Consulta de Crédito)
+ * Objetivo: Consultar dados SCR (Sistema de Informações de Crédito) do Bacen para CPFs
+ * Como funciona: Realiza autenticação em 3 etapas (login, autenticação de empresa), depois consulta dados dos últimos 24 meses para um CPF
+ */
 export class ApiBacen{
     constructor(){
         this.refreshToken = '';
@@ -412,6 +429,10 @@ export class ApiBacen{
         this.dividas = new Array();
     }
 
+    /**
+     * Objetivo: Método principal para consultar dados completos do Bacen para um CPF
+     * Como funciona: Faz login, autentica empresa, gera array dos últimos 24 meses, e para cada mês consulta dados SCR do Bacen, retornando array com todos os períodos
+     */
     async main(cpf){
         const functions = new Objetos(); // classes que contém objetos e funções para uso;
         const dados = await this.login(); // Primeiro é realizado o login no sistema -> o qual é disponibilizado o token e o refreshToken.
@@ -434,7 +455,10 @@ export class ApiBacen{
         return this.dividas;
     }
 
-    // Fazendo login no sistema do Bacen.
+    /**
+     * Objetivo: Realizar login na API do Bacen para obter tokens de autenticação
+     * Como funciona: Faz requisição POST com login e senha, e retorna accessToken e refreshToken que serão usados nas próximas requisições
+     */
     async login(){
         try{
 
@@ -459,6 +483,10 @@ export class ApiBacen{
         }
     }
 
+    /**
+     * Objetivo: Renovar o token de acesso usando o refresh token
+     * Como funciona: Faz requisição POST com refreshToken no body e accessToken no header Authorization, e retorna novo token de acesso
+     */
     async refreshToken(tokenRefresh, AccesToken){
         try{
 
@@ -483,6 +511,10 @@ export class ApiBacen{
         }
     }
 
+    /**
+     * Objetivo: Autenticar a empresa no sistema do Bacen usando o refresh token
+     * Como funciona: Faz requisição POST com código da empresa e refreshToken, enviando accessToken no header Authorization, e retorna token autenticado para consultas
+     */
     async autenticandoToken(){
         try{
 
@@ -512,7 +544,10 @@ export class ApiBacen{
         }
     }
 
-    // Prtoblema na busca do token.
+    /**
+     * Objetivo: Consultar dados SCR (dívidas) do Bacen para um CPF em um período específico
+     * Como funciona: Faz requisição POST para /Multiplo com ação "ConsultaSCR", enviando CPF, ano e mês da base de dados, e retorna dados completos de dívidas do período
+     */
     async buscaDividas(cpf, AccessToken, DataBaseAno, DataBaseMes){
         try{
 
@@ -545,10 +580,18 @@ export class ApiBacen{
 
 }
 
+/**
+ * Classe para integração com API do Ploomes para upload de documentos/imagens
+ * Objetivo: Fazer upload de imagens (gráficos) para deals no Ploomes
+ * Como funciona: Tenta upload via FormData multipart, se falhar tenta via Base64, e retorna URL da imagem para atualização nos campos do deal
+ */
 export class ApiPloomesDocumento{
     constructor(){}
 
-    // Upload de imagem para o endpoint /Images do Ploomes
+    /**
+     * Objetivo: Fazer upload de uma imagem (gráfico) para o Ploomes associada a um deal
+     * Como funciona: Primeiro tenta upload via FormData multipart no endpoint /Images, se falhar tenta via Base64 no endpoint /Attachments/Base64, e retorna URL da imagem ou erro
+     */
     async uploadImageToPloomes(imageBuffer, fileName, dealId) {
         try {
             console.log(`🔍 Tentando upload para Ploomes - DealId: ${dealId}, FileName: ${fileName}`);
@@ -636,7 +679,10 @@ export class ApiPloomesDocumento{
         }
     }
 
-    // Atualizar campos OtherProperties com URL da imagem do gráfico
+    /**
+     * Objetivo: Atualizar campo customizado do deal com a URL da imagem do gráfico gerado
+     * Como funciona: Mapeia o índice do tomador para o FieldKey correspondente, faz requisição PATCH no deal com a URL da imagem no campo OtherProperties específico do tomador
+     */
     async updateDealWithGraphImage(dealId, imageUrl, tomadorIndex) {
         try {
             console.log(`🔄 Atualizando Deal ${dealId} com imagem do gráfico para tomador ${tomadorIndex + 1}`);

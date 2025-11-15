@@ -4,13 +4,21 @@ import { createCanvas } from 'canvas';
 // Registrar todos os componentes do Chart.js
 Chart.register(...registerables);
 
+/**
+ * Classe para geração de gráficos usando Chart.js e Canvas
+ * Objetivo: Gerar gráficos de evolução de dívidas em formato PNG
+ * Como funciona: Usa Chart.js para criar gráfico de linha em canvas Node.js, renderiza e converte para buffer PNG em memória
+ */
 export class GeradorGrafico {
   constructor() {
     this.largura = 800;
     this.altura = 600;
   }
 
-  // Método principal para gerar gráfico de evolução das dívidas (apenas em memória)
+  /**
+   * Objetivo: Gerar gráfico de linha mostrando evolução das dívidas (vencidas, a vencer e prejuízo) ao longo do tempo
+   * Como funciona: Cria canvas, configura Chart.js com dados processados, renderiza gráfico de linha com 3 datasets (vencido em vermelho, prejuízo em laranja, a vencer em verde), aguarda renderização, converte para buffer PNG, e retorna sem salvar em disco
+   */
   async gerarGraficoEvolucaoDividas(dadosGrafico, cpf) {
     try {
       // Configurar canvas

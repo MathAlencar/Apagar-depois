@@ -1,4 +1,8 @@
 export class Objetos{
+  /**
+   * Objetivo: Criar um objeto estruturado com todas as informações de dívidas de um tomador
+   * Como funciona: Recebe CPF e valores de todas as modalidades de dívida (vencido e a vencer), e retorna um objeto organizado com todas essas informações
+   */
   criaTomador(
     cpfTomador,
     creditoRotativoVencido = 0,           creditoRotativoAVencer = 0,
@@ -41,6 +45,10 @@ export class Objetos{
     };
   }
 
+  /**
+   * Objetivo: Gerar array com os últimos 24 meses a partir de uma data de referência
+   * Como funciona: Se o dia do mês for menor que 25, considera o mês anterior como base, depois gera 24 períodos retroativos no formato {year, month}
+   */
   getUltimos24Meses(refDate = new Date()) {
     const base = new Date(refDate);
     const dia = base.getDate(); // dia do mês
@@ -62,14 +70,18 @@ export class Objetos{
     return periodos;
   }
 
+  /**
+   * Objetivo: Categorizar e somar todas as dívidas de um cliente por modalidade e status (vencido/a vencer)
+   * Como funciona: Itera sobre o array ResumoModalidade dos dados do Bacen, compara o subdomínio com arrays de categorias predefinidas, e soma os valores conforme o tipo (VENCIDO ou A VENCER) em variáveis específicas para cada modalidade
+   */
   capturandoDividas(data){
 
     let totalVencido = data.dados.ResumoDoClienteTraduzido.CarteiraVencido;
     let totalVencer = data.dados.ResumoDoClienteTraduzido.CarteiraVencer;
 	let prejuizo = data.dados.ResumoDoClienteTraduzido.Prejuizo;
-    
+
     let teste = data.dados.ResumoModalidade; // Array de dividas;
-    
+
     var creditoRotativoVencido = 0;
     var homeEquityVencido = 0;
     var cartaoCreditoVencido = 0;
@@ -84,7 +96,7 @@ export class Objetos{
     var outrosEmprestimosVencido = 0;
     var outrasDividas1Vencido = 0;
     var outrasDividas2Vencido = 0;
-    var totalCarteiraVencido = totalVencido; 
+    var totalCarteiraVencido = totalVencido;
 
     var creditoRotativoAVencer = 0;
     var homeEquityAVencer = 0;
@@ -100,7 +112,7 @@ export class Objetos{
     var outrosEmprestimosAVencer = 0;
     var outrasDividas1AVencer = 0;
     var outrasDividas2AVencer = 0;
-    var totalCarteiraAVencer = totalVencer; 
+    var totalCarteiraAVencer = totalVencer;
 
 	const arrayAntecipacao = [
 		'Adiantamento sobre cambiais entregues',
@@ -234,7 +246,7 @@ export class Objetos{
 
   for(const value of teste){
 
-    // Antecipação	
+    // Antecipação
 		for(const antecipacao of arrayAntecipacao){
 			if((value.subdominio == antecipacao) && value.tipo == 'VENCIDO'){
 				outrasDividas1Vencido+=value.valorVencimento;
@@ -244,11 +256,10 @@ export class Objetos{
 			}
 		}
 
-    // Dividas Extras	
+    // Dividas Extras
 		for(const DividasExtras of arrayDividasExtras){
 			if((value.subdominio == DividasExtras) && value.tipo == 'VENCIDO'){
 				outrasDividas2Vencido+=value.valorVencimento;
-				console.log(outrasDividas2Vencido)
 			}
 			if((value.subdominio == DividasExtras) && value.tipo == 'A VENCER'){
 				outrasDividas2AVencer+=value.valorVencimento;
@@ -389,47 +400,47 @@ export class Objetos{
 	// console.log('AQUISIÇÃO DE BENS:');
 	// console.log('  A Vencer:', aquisicaoDeBensAVencer);
 	// console.log('  Vencido:', aquisicaoDeBensVencido);
-	
+
 	// console.log('CAPITAL DE GIRO:');
 	// console.log('  A Vencer:', capitalDeGiroAVencer);
 	// console.log('  Vencido:', capitalDeGiroVencido);
-	
+
 	// console.log('CARTÃO DE CRÉDITO:');
 	// console.log('  A Vencer:', cartaoCreditoAVencer);
 	// console.log('  Vencido:', cartaoCreditoVencido);
-	
+
 	// console.log('CARTÃO DE CRÉDITO NÃO MIGRADO:');
 	// console.log('  A Vencer:', cartaoCreditoNaoMigradoAVencer);
 	// console.log('  Vencido:', cartaoCreditoNaoMigradoVencido);
-	
+
 	// console.log('CHEQUE ESPECIAL:');
 	// console.log('  A Vencer:', chequeEspecialAVencer);
 	// console.log('  Vencido:', chequeEspecialVencido);
-	
+
 	// console.log('CRÉDITO PESSOAL COM CONSIGNAÇÃO:');
 	// console.log('  A Vencer:', creditoPessoalConsignadoAVencer);
 	// console.log('  Vencido:', creditoPessoalConsignadoVencido);
-	
+
 	// console.log('CRÉDITO PESSOAL SEM CONSIGNAÇÃO:');
 	// console.log('  A Vencer:', creditoPessoalSemConsignacaoAVencer);
 	// console.log('  Vencido:', creditoPessoalSemConsignacaoVencido);
-	
+
 	// console.log('CRÉDITO ROTATIVO:');
 	// console.log('  A Vencer:', creditoRotativoAVencer);
 	// console.log('  Vencido:', creditoRotativoVencido);
-	
+
 	// console.log('FINANCIAMENTO HABITACIONAL:');
 	// console.log('  A Vencer:', financiamentoHabitacionalAVencer);
 	// console.log('  Vencido:', financiamentoHabitacionalVencido);
-	
+
 	// console.log('HOME EQUITY:');
 	// console.log('  A Vencer:', homeEquityAVencer);
 	// console.log('  Vencido:', homeEquityVencido);
-	
+
 	// console.log('RURAL:');
 	// console.log('  A Vencer:', ruralAVencer);
 	// console.log('  Vencido:', ruralVencido);
-	
+
 	// console.log('OUTROS EMPRÉSTIMOS:');
 	// console.log('  A Vencer:', outrosEmprestimosAVencer);
 	// console.log('  Vencido:', outrosEmprestimosVencido);
@@ -471,22 +482,25 @@ export class Objetos{
     };
   }
 
-  // Método para processar dados dos 12 meses e extrair valores para gráfico
+  /**
+   * Objetivo: Processar dados dos últimos meses para formato adequado à geração de gráficos
+   * Como funciona: Itera sobre os dados dos meses, extrai valores de carteira vencida, a vencer e prejuízo, formata a data como MM/YYYY, e ordena cronologicamente do mais antigo para o mais recente
+   */
   processarDadosParaGrafico(dados12Meses) {
     const dadosGrafico = [];
-    
+
     for (const periodo of dados12Meses) {
       const { year, month, dados } = periodo;
-      
+
       // Verificar se há dados válidos
       if (dados && dados.Erro === false && dados.ResumoDoClienteTraduzido) {
         const carteiraVencido = dados.ResumoDoClienteTraduzido.CarteiraVencido || 0;
         const carteiraVencer = dados.ResumoDoClienteTraduzido.CarteiraVencer || 0;
 		const prejuizo = dados.ResumoDoClienteTraduzido.Prejuizo || 0;
-        
+
         // Formatar data para exibição (MM/YYYY)
         const dataFormatada = `${month.padStart(2, '0')}/${year}`;
-        
+
         dadosGrafico.push({
           periodo: dataFormatada,
           vencido: carteiraVencido,
@@ -496,14 +510,14 @@ export class Objetos{
         });
       }
     }
-    
+
     // Ordenar por período (mais antigo primeiro)
     dadosGrafico.sort((a, b) => {
       const [mesA, anoA] = a.periodo.split('/');
       const [mesB, anoB] = b.periodo.split('/');
       return new Date(anoA, mesA - 1) - new Date(anoB, mesB - 1);
     });
-    
+
     return dadosGrafico;
   }
 }

@@ -1,4 +1,9 @@
-"use strict"; function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _sequelize = require('sequelize');
+"use strict"; function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }/**
+ * Arquivo de inicialização do banco de dados Sequelize
+ * Objetivo: Configurar conexão com banco de dados e inicializar todos os models
+ * Como funciona: Cria instância do Sequelize com configurações do database.js, inicializa todos os models registrados, e executa associações entre models se existirem
+ */
+var _sequelize = require('sequelize');
 var _databasejs = require('../config/database.js'); var _databasejs2 = _interopRequireDefault(_databasejs);
 
 var _Administradorjs = require('../Models/Administrador.js'); var _Administradorjs2 = _interopRequireDefault(_Administradorjs);

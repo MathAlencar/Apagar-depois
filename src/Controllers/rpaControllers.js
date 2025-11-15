@@ -15,7 +15,11 @@ const storage = multer.memoryStorage();
 // até 20 arquivos por requisição (ajuste se quiser)
 const upload = multer({ storage });
 
-// Classe para integração com API GerarExcelSCR
+/**
+ * Classe para integração com API GerarExcelSCR
+ * Objetivo: Gerar arquivos Excel SCR a partir dos dados do Bacen
+ * Como funciona: Converte dados do Bacen para o formato esperado pela API externa e faz requisição POST para gerar o Excel
+ */
 class APIGeradorExcelSCR {
   constructor() {
     this.apiUrl = 'https://api.multiplo.moneyp.com.br/api/Bureau/GerarExcelSCR';
@@ -76,7 +80,8 @@ class APIGeradorExcelSCR {
   }
 
   /**
-   * Cria pasta "Documentos Excel" se não existir
+   * Objetivo: Garantir que a pasta de documentos Excel existe no sistema de arquivos
+   * Como funciona: Verifica se a pasta existe usando fs.existsSync, e se não existir, cria recursivamente usando fs.mkdirSync
    */
   _criarPastaSeNaoExistir() {
     if (!fs.existsSync(this.pastaDocumento)) {
@@ -86,7 +91,8 @@ class APIGeradorExcelSCR {
   }
 
   /**
-   * Gera nome único para o arquivo Excel
+   * Objetivo: Gerar um nome único para o arquivo Excel baseado no CPF e timestamp
+   * Como funciona: Remove caracteres não numéricos do CPF, adiciona prefixo "SCR_", e concatena com timestamp ISO formatado
    */
   _gerarNomeArquivo(cpfCliente) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -95,9 +101,8 @@ class APIGeradorExcelSCR {
   }
 
   /**
-   * Converte dados do Bacen para o formato da API
-   * @param {Array} dataBacen - Dados retornados por bacen.main(cpf)
-   * @returns {Object} Dados no formato da API
+   * Objetivo: Converter os dados retornados pelo Bacen para o formato esperado pela API de geração de Excel
+   * Como funciona: Itera sobre os dados do Bacen, filtra apenas períodos válidos (sem erro), e monta um objeto com labels padrão e periodosConsulta
    */
   _converterDadosBacenParaAPI(dataBacen) {
     const periodosConsulta = [];
@@ -131,200 +136,192 @@ class APIGeradorExcelSCR {
    * @returns {Promise<Object>} Resultado da operação
    */
 
-  // async gerarExcelSCR(dataBacen, cpfCliente) {
-  //   try {
-  //     // console.log(`🚀 Gerando Excel SCR via API para CPF ${cpfCliente}...`);
+  /**
+   * Objetivo: Limpar arquivos Excel antigos da pasta de documentos para evitar acúmulo de arquivos
+   * Como funciona: Lê todos os arquivos .xlsx da pasta, verifica a data de modificação de cada um, e exclui os que são mais antigos que o limite especificado em minutos
+   */
+    async limparExcelsAntigos(minutos = 5) {
+      // garante que a pasta exista
+      this._criarPastaSeNaoExistir();
 
-  //     // Criar pasta se necessário
-  //     this._criarPastaSeNaoExistir();
+      const LIMITE_MS = minutos * 60_000;
+      const agora = Date.now();
 
-  //     // Converter dados do Bacen para formato da API
-  //     const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+      const resultado = {
+        pasta: this.pastaDocumento,
+        minutos,
+        candidatos: 0,
+        excluidos: [],
+        ignorados: [],
+        erros: []
+      };
 
-  //     if (dadosAPI.periodosConsulta.length === 0) {
-  //       throw new Error('Nenhum período válido encontrado nos dados do Bacen');
-  //     }
-
-  //     // Gerar nome do arquivo
-  //     const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
-  //     const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
-
-  //     // console.log(`📄 Enviando ${dadosAPI.periodosConsulta.length} períodos para API...`);
-
-  //     // Fazer requisição POST
-  //     const response = await axios.post(this.apiUrl, dadosAPI, {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  //       },
-  //       responseType: 'arraybuffer',
-  //       timeout: this.timeout
-  //     });
-
-  //     // console.log(`✅ Resposta recebida: ${response.status} ${response.statusText}`);
-  //     // console.log(`📏 Tamanho da resposta: ${response.data.length} bytes`);
-
-  //     // Salvar arquivo Excel
-  //     fs.writeFileSync(caminhoCompleto, response.data);
-
-  //     // Verificar se arquivo foi salvo
-  //     const stats = fs.statSync(caminhoCompleto);
-
-  //     // console.log('🎉 Excel SCR gerado com sucesso!');
-  //     // console.log(`📁 Local: ${caminhoCompleto}`);
-  //     // console.log(`📏 Tamanho: ${stats.size} bytes`);
-
-  //     return {
-  //       success: true,
-  //       arquivo: caminhoCompleto,
-  //       nomeArquivo: nomeArquivo,
-  //       tamanho: stats.size,
-  //       dataGeracao: new Date().toISOString(),
-  //       cpfCliente: cpfCliente,
-  //       periodosProcessados: dadosAPI.periodosConsulta.length
-  //     };
-
-  //   } catch (error) {
-  //     console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
-
-  //     let erroDetalhado = error.message;
-  //     let statusCode = null;
-
-  //     if (error.response) {
-  //       statusCode = error.response.status;
-  //       erroDetalhado = `HTTP ${statusCode}: ${error.message}`;
-
-  //       // Tentar salvar resposta de erro se for texto
-  //       if (error.response.data && typeof error.response.data === 'string') {
-  //         const erroArquivo = path.join(this.pastaDocumento, `erro_api_${cpfCliente}_${Date.now()}.txt`);
-  //         fs.writeFileSync(erroArquivo, error.response.data);
-  //         // console.log(`📄 Resposta de erro salva em: ${erroArquivo}`);
-  //       }
-  //     }
-
-  //     return {
-  //       success: false,
-  //       erro: erroDetalhado,
-  //       statusCode: statusCode,
-  //       cpfCliente: cpfCliente,
-  //       arquivo: null
-  //     };
-  //   }
-  // }
-
-  async gerarExcelSCR(dataBacen, cpfCliente) {
-  try {
-    // Criar pasta se necessário
-    this._criarPastaSeNaoExistir();
-
-    // Converter dados do Bacen para formato da API
-    const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
-
-    if (dadosAPI.periodosConsulta.length === 0) {
-      throw new Error('Nenhum período válido encontrado nos dados do Bacen');
-    }
-
-    // Gerar nome do arquivo
-    const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
-    const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
-
-    // Log opcional para debug
-    // console.dir(dadosAPI, { depth: null });
-
-    // Fazer requisição POST
-    const response = await axios.post(this.apiUrl, dadosAPI, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      },
-      responseType: 'arraybuffer',
-      timeout: this.timeout
-    });
-
-    const contentType = (response.headers['content-type'] || '').toLowerCase();
-    const buffer = Buffer.from(response.data);
-
-    // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
-    if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
-      const texto = buffer.toString('utf8');
-      let msgErro = texto;
-
-      // tenta parsear como JSON para pegar { error: "..." }
       try {
-        const json = JSON.parse(texto);
-        if (json.error) msgErro = json.error;
-      } catch (_) {
-        // se não for JSON, mantém texto cru mesmo
+        const itens = await fs.promises.readdir(this.pastaDocumento, { withFileTypes: true });
+
+        // só arquivos XLSX (ex.: SCR_*.xlsx)
+        const apenasXlsx = itens
+          .filter((d) => d.isFile() && d.name.toLowerCase().endsWith('.xlsx'));
+
+        for (const arq of apenasXlsx) {
+          const caminho = path.join(this.pastaDocumento, arq.name);
+          try {
+            const st = await fs.promises.stat(caminho);
+
+            // usamos mtime (última modificação). birthtime pode não ser confiável em alguns FS.
+            const idadeMs = agora - st.mtimeMs;
+            const ehAntigo = idadeMs > LIMITE_MS;
+
+            resultado.candidatos += 1;
+
+            if (ehAntigo) {
+              await fs.promises.unlink(caminho);
+              resultado.excluidos.push({
+                arquivo: arq.name,
+                tamanhoBytes: st.size,
+                mtime: st.mtime.toISOString()
+              });
+            } else {
+              resultado.ignorados.push({
+                arquivo: arq.name,
+                tamanhoBytes: st.size,
+                mtime: st.mtime.toISOString()
+              });
+            }
+          } catch (e) {
+            resultado.erros.push({ arquivo: arq.name, erro: e.message });
+          }
+        }
+      } catch (e) {
+        resultado.erros.push({ pasta: this.pastaDocumento, erro: e.message });
       }
 
-      console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
+      return resultado;
+    }
+
+  /**
+   * Objetivo: Gerar arquivo Excel SCR através de chamada à API externa usando dados do Bacen
+   * Como funciona: Converte dados do Bacen para formato da API, faz requisição POST com arraybuffer, valida se a resposta é realmente um Excel, e salva o arquivo na pasta de documentos
+   */
+    async gerarExcelSCR(dataBacen, cpfCliente) {
+    try {
+      // Criar pasta se necessário
+      this._criarPastaSeNaoExistir();
+
+      // Converter dados do Bacen para formato da API
+
+      const dadosAPI = this._converterDadosBacenParaAPI(dataBacen);
+
+      if (dadosAPI.periodosConsulta.length === 0) {
+        throw new Error('Nenhum período válido encontrado nos dados do Bacen');
+      }
+
+      // Gerar nome do arquivo
+      const nomeArquivo = this._gerarNomeArquivo(cpfCliente);
+      const caminhoCompleto = path.join(this.pastaDocumento, nomeArquivo);
+
+      // Log opcional para debug
+      // console.dir(dadosAPI, { depth: null });
+
+      // Fazer requisição POST
+      const response = await axios.post(this.apiUrl, dadosAPI, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        },
+        responseType: 'arraybuffer',
+        timeout: this.timeout
+      });
+
+      const contentType = (response.headers['content-type'] || '').toLowerCase();
+      const buffer = Buffer.from(response.data);
+
+      // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
+      if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+        const texto = buffer.toString('utf8');
+        let msgErro = texto;
+
+        // tenta parsear como JSON para pegar { error: "..." }
+        try {
+          const json = JSON.parse(texto);
+          if (json.error) msgErro = json.error;
+        } catch (_) {
+          // se não for JSON, mantém texto cru mesmo
+        }
+
+        console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
+
+        return {
+          success: false,
+          erro: msgErro,
+          statusCode: response.status,
+          cpfCliente,
+          arquivo: null
+        };
+      }
+
+      // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
+      fs.writeFileSync(caminhoCompleto, buffer);
+
+      const stats = fs.statSync(caminhoCompleto);
+
+      return {
+        success: true,
+        arquivo: caminhoCompleto,
+        nomeArquivo: nomeArquivo,
+        tamanho: stats.size,
+        dataGeracao: new Date().toISOString(),
+        cpfCliente: cpfCliente,
+        periodosProcessados: dadosAPI.periodosConsulta.length
+      };
+
+    } catch (error) {
+      console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
+
+      let erroDetalhado = error.message;
+      let statusCode = null;
+
+      if (error.response) {
+        statusCode = error.response.status;
+
+        // trata data mesmo sendo arraybuffer
+        let textoErro = '';
+        if (error.response.data) {
+          if (error.response.data instanceof ArrayBuffer || Buffer.isBuffer(error.response.data)) {
+            textoErro = Buffer.from(error.response.data).toString('utf8');
+          } else if (typeof error.response.data === 'string') {
+            textoErro = error.response.data;
+          } else {
+            textoErro = JSON.stringify(error.response.data);
+          }
+        }
+
+        erroDetalhado = `HTTP ${statusCode}: ${textoErro}`;
+      }
 
       return {
         success: false,
-        erro: msgErro,
-        statusCode: response.status,
-        cpfCliente,
+        erro: erroDetalhado,
+        statusCode: statusCode,
+        cpfCliente: cpfCliente,
         arquivo: null
       };
     }
-
-    // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
-    fs.writeFileSync(caminhoCompleto, buffer);
-
-    const stats = fs.statSync(caminhoCompleto);
-
-    return {
-      success: true,
-      arquivo: caminhoCompleto,
-      nomeArquivo: nomeArquivo,
-      tamanho: stats.size,
-      dataGeracao: new Date().toISOString(),
-      cpfCliente: cpfCliente,
-      periodosProcessados: dadosAPI.periodosConsulta.length
-    };
-
-  } catch (error) {
-    console.error(`❌ Erro na chamada da API para CPF ${cpfCliente}:`, error.message);
-
-    let erroDetalhado = error.message;
-    let statusCode = null;
-
-    if (error.response) {
-      statusCode = error.response.status;
-
-      // trata data mesmo sendo arraybuffer
-      let textoErro = '';
-      if (error.response.data) {
-        if (error.response.data instanceof ArrayBuffer || Buffer.isBuffer(error.response.data)) {
-          textoErro = Buffer.from(error.response.data).toString('utf8');
-        } else if (typeof error.response.data === 'string') {
-          textoErro = error.response.data;
-        } else {
-          textoErro = JSON.stringify(error.response.data);
-        }
-      }
-
-      erroDetalhado = `HTTP ${statusCode}: ${textoErro}`;
     }
 
-    return {
-      success: false,
-      erro: erroDetalhado,
-      statusCode: statusCode,
-      cpfCliente: cpfCliente,
-      arquivo: null
-    };
-  }
-  }
 
 }
 
 class CadastroControllers {
 
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Endpoint de teste para verificar se a API está funcionando
+   * Como funciona: Retorna uma mensagem JSON simples de sucesso
+   */
   async teste(req,res){
     try{
       return res.status(200).json({
-        "msg": "dessu bossm"
+        "msg": "código atualizado!"
       })
 
     }catch(e){
@@ -334,7 +331,10 @@ class CadastroControllers {
     }
   }
 
-  // Já está funcionando.
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Endpoint de teste para consultar dados do Bacen para um CPF específico
+   * Como funciona: Instancia a API do Bacen, chama o método main com um CPF fixo, e retorna os dados dos últimos 24 meses
+   */
   async searchBacen(req, res){
     try {
 
@@ -354,7 +354,10 @@ class CadastroControllers {
     }
   }
 
-  // Novo método para gerar gráfico de evolução das dívidas
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Gerar gráfico de evolução das dívidas para um CPF específico
+   * Como funciona: Consulta dados do Bacen, processa os dados para formato de gráfico, gera o gráfico usando Chart.js, e retorna o resultado em JSON
+   */
   async gerarGraficoEvolucao(req, res) {
     try {
       const { cpf } = req.params;
@@ -404,7 +407,10 @@ class CadastroControllers {
     }
   }
 
-  // Subindo o documento no ploomes.
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Endpoint para fazer upload de documentos para o Ploomes (atualmente incompleto)
+   * Como funciona: Retorna uma resposta de sucesso, mas a implementação completa não está presente
+   */
   async uploadToPloomes(req, res) {
     try {
 
@@ -422,7 +428,10 @@ class CadastroControllers {
     }
   }
 
-  // Versão otimizada com rate limiting para respeitar limite de 6 requisições simultâneas
+  /**
+   * Objetivo: Processar deals do Ploomes de forma otimizada, consultando Bacen, gerando gráficos e atualizando campos
+   * Como funciona: Busca deals no Ploomes, para cada deal extrai CPFs dos tomadores, consulta Bacen, processa dívidas, gera gráficos, faz upload para Ploomes, atualiza campos de dívidas, gera Excel SCR, tudo com rate limiting para respeitar limites da API
+   */
   async storeOtimizado(req, res) {
     try {
       // console.log('🚀 Iniciando processamento otimizado com rate limiting...');
@@ -438,6 +447,10 @@ class CadastroControllers {
       const maxRequisiçõesSimultâneas = 6;
       const filaDeRequisições = [];
 
+      /**
+       * Objetivo: Controlar o número de requisições simultâneas para não exceder o limite da API
+       * Como funciona: Mantém um contador de requisições ativas, se atingir o máximo adiciona à fila, e processa a fila conforme requisições são concluídas
+       */
       const executarComRateLimit = async (função) => {
         return new Promise((resolve, reject) => {
           const executar = async () => {
@@ -466,11 +479,18 @@ class CadastroControllers {
         });
       };
 
-      // Processar deals em lotes de 2 para evitar sobrecarga
+      /**
+       * Objetivo: Processar um lote de deals de forma controlada
+       * Como funciona: Para cada deal do lote, verifica se já foi processado, extrai CPFs dos tomadores, processa cada tomador sequencialmente (consulta Bacen, gera gráfico, upload, atualização), e atualiza campos de dívidas no deal
+       */
       const processarLoteDeals = async (loteDeals) => {
         // console.log(`📦 Processando lote de ${loteDeals.length} deals...`);
 
-        const processarDeal = async (dealUser) => {
+          /**
+           * Objetivo: Processar um deal individual do Ploomes
+           * Como funciona: Verifica se o deal já foi processado, extrai CPFs dos 4 tomadores possíveis, processa cada tomador (consulta Bacen, categoriza dívidas, gera gráfico, faz upload, atualiza campos), e por fim atualiza todos os campos de dívidas no deal
+           */
+          const processarDeal = async (dealUser) => {
           // console.log('dealUser', dealUser)
           const { id, StageId, ContactId, otherProps } = dealUser;
 
@@ -493,12 +513,17 @@ class CadastroControllers {
             otherProps['deal_D8603767-5A19-46DC-9B88-2F000BD01096'] || otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D']
           ];
 
-          // Processar tomadores sequencialmente para evitar rate limit
+          console.log(cpfCnpjTomadores)
+
+          /**
+           * Objetivo: Processar um tomador individual (CPF) de um deal
+           * Como funciona: Consulta dados do Bacen para o CPF, encontra dados válidos, captura e categoriza dívidas, gera gráfico de evolução, faz upload do gráfico para Ploomes com retry, atualiza campo do gráfico no deal, e gera Excel SCR
+           */
           const processarTomador = async (cpf, tomadorIndex) => {
             if (!cpf) return null;
 
             try {
-              // console.log(`🔄 Processando tomador ${tomadorIndex + 1} - CPF: ${cpf}`);
+              console.log(`🔄 Processando tomador ${tomadorIndex + 1} - CPF: ${cpf}`);
 
               // Consulta ao Bacen (sem rate limiting - é API externa)
               const bacen = new ApiBacen();
@@ -514,14 +539,12 @@ class CadastroControllers {
               }
 
               if (!dadosValidos) {
-                // console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
+                console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
                 return null;
               }
 
               // Capturar dados das dívidas
               const retornoJson = objeto.capturandoDividas(dadosValidos);
-
-              console.log(retornoJson.outrasDividas2Vencido)
 
               // Gerar gráfico (sem rate limiting - é processamento local)
               const dadosGrafico = objeto.processarDadosParaGrafico(dataBacen);
@@ -538,7 +561,10 @@ class CadastroControllers {
                 return null;
               }
 
-              // Upload com rate limiting e retry
+              /**
+               * Objetivo: Fazer upload do gráfico para o Ploomes com sistema de retry em caso de erro
+               * Como funciona: Tenta fazer upload até 3 vezes, se receber erro 429 (rate limit) aguarda 2 segundos antes de tentar novamente
+               */
               const uploadComRetry = async (tentativas = 3) => {
                 for (let i = 0; i < tentativas; i++) {
                   try {
@@ -563,7 +589,10 @@ class CadastroControllers {
 
               const uploadResult = await uploadComRetry();
 
-              // Atualizar campo com rate limiting e retry
+              /**
+               * Objetivo: Atualizar campo do gráfico no deal do Ploomes com sistema de retry
+               * Como funciona: Tenta atualizar o campo até 3 vezes, se receber erro 429 aguarda 2 segundos antes de tentar novamente
+               */
               const atualizarComRetry = async (tentativas = 3) => {
                 for (let i = 0; i < tentativas; i++) {
                   try {
@@ -588,10 +617,11 @@ class CadastroControllers {
 
               const updateResult = await atualizarComRetry();
 
-              // console.log(`✅ Gráfico processado com sucesso para tomador ${tomadorIndex + 1}`);
-
               // Gerar Excel SCR via API (sem rate limiting - é processamento local)
               const geradorExcel = new APIGeradorExcelSCR();
+              // Limpando primeiros os Excels ->
+              await geradorExcel.limparExcelsAntigos(2880); // 5 minutos
+
               let resultadoExcel = null;
 
               try {
@@ -785,7 +815,10 @@ class CadastroControllers {
     }
   }
 
-  // Endpoint de teste para gerar gráfico e enviar para Ploomes
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Endpoint de teste para gerar gráfico e enviar para o Ploomes
+   * Como funciona: Recebe CPF e DealId, consulta dados do Bacen, gera gráfico, faz upload para Ploomes, e atualiza campo do deal com a URL da imagem
+   */
   async testeGraficoUpload(req, res) {
     try {
       const { cpf, dealId } = req.params;

@@ -24,6 +24,11 @@ const PUBLIC_DIR_UPLOAD = path.join(__dirname, '../Front-end/Documentos Excel/')
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
 
+/**
+ * Classe principal da aplicação Express
+ * Objetivo: Configurar e inicializar o servidor Express com middlewares e rotas
+ * Como funciona: No construtor inicializa Express, configura middlewares (CORS, JSON, arquivos estáticos), e registra todas as rotas da aplicação
+ */
 class App {
   constructor() {
     this.app = express();
@@ -31,6 +36,10 @@ class App {
     this.routes();
   }
 
+  /**
+   * Objetivo: Configurar middlewares do Express (CORS, parsing de JSON/URL, arquivos estáticos)
+   * Como funciona: Habilita CORS, configura parsing de URL encoded e JSON, e serve arquivos estáticos do front-end e pasta de documentos Excel
+   */
   middlewares() {
     this.app.use(cors());
     this.app.use(express.urlencoded({ extended: true }));
@@ -44,6 +53,10 @@ class App {
     this.app.use('/excel/', express.static(PUBLIC_DIR_UPLOAD));
   }
 
+  /**
+   * Objetivo: Registrar todas as rotas da aplicação
+   * Como funciona: Define rota raiz para servir index.html, registra rotas de autenticação e RPA, e configura rotas protegidas para listar e baixar arquivos Excel
+   */
   routes() {
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
