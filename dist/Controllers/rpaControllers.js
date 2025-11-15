@@ -620,7 +620,7 @@ class CadastroControllers {
               // Gerar Excel SCR via API (sem rate limiting - é processamento local)
               const geradorExcel = new APIGeradorExcelSCR();
               // Limpando primeiros os Excels ->
-              await geradorExcel.limparExcelsAntigos(); // 5 minutos
+              await geradorExcel.limparExcelsAntigos(2880); // 5 minutos
 
               let resultadoExcel = null;
 
