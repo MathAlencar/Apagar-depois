@@ -71,10 +71,13 @@
   }
 
   function extractCpfDigits(text) {
-    const onlyDigits = (text || '').replace(/\D+/g, '');
-    const match = onlyDigits.match(/(\d{11})/); // primeiro CPF encontrado
-    return match ? match[1] : '';
-  }
+  const onlyDigits = (text || '').replace(/\D+/g, '');
+
+  // Prioriza CNPJ (14 dígitos); se não tiver, pega CPF (11 dígitos)
+  const match = onlyDigits.match(/(\d{14}|\d{11})/);
+
+  return match ? match[1] : '';
+}
 
   function parseDateFromFilename(name) {
     function makeLocal(yyyy, MM, dd) {
