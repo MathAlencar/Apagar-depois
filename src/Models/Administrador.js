@@ -48,7 +48,7 @@ export default class Administrador extends Model {
       },
     }, {
       sequelize,
-      tableName: 'administrador',
+      tableName: 'administrador2',
     });
 
     this.addHook('beforeSave', async (usuario) => {
