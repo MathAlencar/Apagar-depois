@@ -48,7 +48,7 @@ O hook abaixo irá manipular uma variável virtual (não salva no banco de dados
       },
     }, {
       sequelize,
-      tableName: 'administrador',
+      tableName: 'administrador2',
     });
 
     this.addHook('beforeSave', async (usuario) => {

@@ -1,7 +1,7 @@
-"use strict";/** @type {import('sequelize-cli').Migration} */
-module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('administrador', {
+"use strict";Object.defineProperty(exports, "__esModule", {value: true});/** @type {import('sequelize-cli').Migration} */
+
+ async function up(queryInterface, Sequelize) {
+    await queryInterface.createTable('administrador2', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -30,9 +30,8 @@ module.exports = {
         allowNull: false,
       },
     });
-  },
+} exports.up = up;
 
-  async down(queryInterface) {
-    await queryInterface.dropTable('administrador');
-  },
-};
+ async function down(queryInterface) {
+    await queryInterface.dropTable('administrador2');
+} exports.down = down;

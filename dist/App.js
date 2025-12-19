@@ -21,8 +21,8 @@ const PUBLIC_DIR = _path2.default.join(__dirname, '../Front-end/Front-end');
 const PUBLIC_DIR_UPLOAD = _path2.default.join(__dirname, '../Front-end/Documentos Excel/');
 
 // __dirname em ESM
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = _url.fileURLToPath.call(void 0, import.meta.url);
+const __dirname = _path2.default.dirname(__filename);
 
 /**
  * Classe principal da aplicação Express
