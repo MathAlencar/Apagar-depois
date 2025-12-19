@@ -17,12 +17,12 @@ import AdminRoutes from './routes/administrador/administradorRoutes.js';
 import AdmintokenRoutes from './routes/administrador/TokenRoutes.js';
 import RpaRoutes from './routes/rpaRoutes.js';
 
-const PUBLIC_DIR = path.join(__dirname, '../Front-end/Front-end');
-const PUBLIC_DIR_UPLOAD = path.join(__dirname, '../Front-end/Documentos Excel/');
-
 // __dirname em ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const PUBLIC_DIR = path.join(__dirname, '../Front-end/Front-end');
+const PUBLIC_DIR_UPLOAD = path.join(__dirname, '../Front-end/Documentos Excel/');
 
 /**
  * Classe principal da aplicação Express
