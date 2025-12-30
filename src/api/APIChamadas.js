@@ -23,23 +23,39 @@ export class CallOptions{
             // Id's usados -> 802062337
 
             const url =
-                `/Deals` +
-                `?$select=Id,Title,StageId,StatusId,ContactId` +
-                `&$expand=OtherProperties(` +
-                `$filter=` +
-                `FieldKey eq 'deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5' or ` +
+            `/Deals` +
+            `?$select=Id,Title,StageId,StatusId,ContactId` +
+            `&$expand=OtherProperties(` +
+            `$filter=` +
+            `FieldKey eq 'deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5' or ` +
 
-                `FieldKey eq 'deal_A9AC9C2E-633A-480F-8689-C93D930F6847' or ` +
-                `FieldKey eq 'deal_AF1A346F-3AE9-428B-9FF9-A6317AC02FD3' or ` +
-                `FieldKey eq 'deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D' or ` +
-                `FieldKey eq 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391' or ` +
+            `FieldKey eq 'deal_A9AC9C2E-633A-480F-8689-C93D930F6847' or ` +
+            `FieldKey eq 'deal_AF1A346F-3AE9-428B-9FF9-A6317AC02FD3' or ` +
+            `FieldKey eq 'deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D' or ` +
+            `FieldKey eq 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391' or ` +
 
-                `FieldKey eq 'deal_E95722A2-7AAE-4EBE-B632-1C954764894C' or ` +
-                `FieldKey eq 'deal_0C3DA592-AE6D-4DE2-A9B3-A8251CD08F00' or ` +
-                `FieldKey eq 'deal_5B70C640-6C0C-48F6-ADA7-F7DE2F0A470D' or ` +
-                `FieldKey eq 'deal_D8603767-5A19-46DC-9B88-2F000BD01096'` +
-                `)` +
-                `&$filter=StatusId eq 1 and StageId eq 185072`;
+            `FieldKey eq 'deal_E95722A2-7AAE-4EBE-B632-1C954764894C' or ` +
+            `FieldKey eq 'deal_0C3DA592-AE6D-4DE2-A9B3-A8251CD08F00' or ` +
+            `FieldKey eq 'deal_5B70C640-6C0C-48F6-ADA7-F7DE2F0A470D' or ` +
+            `FieldKey eq 'deal_D8603767-5A19-46DC-9B88-2F000BD01096' or ` +
+            `FieldKey eq 'deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8' or ` +
+            `FieldKey eq 'deal_6428B433-76DF-439F-B2CD-A2E9F18B854C' or ` +
+
+            // === PJ LTDA (1) a (10) ===
+            `FieldKey eq 'deal_3C86C7F4-CC28-43AB-A211-1FC10E102D98' or ` +
+            `FieldKey eq 'deal_986A2C8A-3A08-4009-9FB0-4A15C6CECCE0' or ` +
+            `FieldKey eq 'deal_C92D2E5C-6001-40BB-A096-032669146910' or ` +
+            `FieldKey eq 'deal_F810F8E0-5290-4CB1-A3F8-192EDD5C1FF0' or ` +
+            `FieldKey eq 'deal_441B58BB-842D-400D-B1B6-DEC311742BC7' or ` +
+            `FieldKey eq 'deal_2D0E193F-4DA4-4C34-A97C-82295C3E0F92' or ` +
+            `FieldKey eq 'deal_FC93A750-9123-4F41-BD70-4063EAC22612' or ` +
+            `FieldKey eq 'deal_6299BA58-9DBE-4396-A431-2322CA6EAE19' or ` +
+            `FieldKey eq 'deal_38AC04A7-5258-4C6C-AFB8-E363D827052E' or ` +
+            `FieldKey eq 'deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3'` +
+
+            `)` +
+            `&$filter=StatusId eq 1 and StageId eq 185072`;
+
 
             const negocios = await apiPloomes.get(url,
             {
@@ -51,17 +67,32 @@ export class CallOptions{
                 }
             );
 
+            const pickValue = (value) => {
+              if (value.FieldKey === 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391') {
+                return value.BoolValue;
+              }
+
+              if (value.FieldKey === 'deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8') {
+                return value.ObjectValueName;
+              }
+
+              return value.StringValue;
+            };
+
             const dados = negocios.data.value.map(deal => ({
-                id: deal.Id,
-                titulo: deal.Title,
-                StageId: deal.StageId,
-                ContactId: deal.ContactId,
-                otherProps: Object.fromEntries(
-                    (deal.OtherProperties || []).map(value => [value.FieldKey, value.FieldKey === 'deal_8202EECD-41FA-4AAD-9927-90105C5B9391' ? value.BoolValue : value.StringValue])
-                )
+              id: deal.Id,
+              titulo: deal.Title,
+              StageId: deal.StageId,
+              ContactId: deal.ContactId,
+              otherProps: Object.fromEntries(
+                (deal.OtherProperties || []).map(value => ([
+                  value.FieldKey,
+                  pickValue(value)
+                ]))
+              )
             }));
 
-            // // lista das chaves que você quer capturar
+            // lista das chaves que você quer capturar
             // const fieldKeys = [
             // "deal_304CA7AF-E8C8-4006-BC57-6D5FA653FEB5", // Tomador 1 - CPF
             // "deal_A9AC9C2E-633A-480F-8689-C93D930F6847", // Tomador 2 - CPF
@@ -83,10 +114,8 @@ export class CallOptions{
      * Objetivo: Atualizar todos os campos de dívidas de um deal no Ploomes
      * Como funciona: Monta um objeto com OtherProperties contendo todos os campos de dívidas (vencido e a vencer) para os 4 tomadores, marca o deal como não processado, e faz requisição PATCH para atualizar o deal
      */
-    async UpdateData(id, ContactId, StageId, Dividas){
+    async UpdateData(id, ContactId, StageId, Dividas, populacao){
         try {
-
-            console.log(Dividas[0]?.totalAVencer)
 
             const body = {
                 ContactId,
@@ -95,6 +124,7 @@ export class CallOptions{
 
                     // --- Processado 📌 --- //
                     { "FieldKey": "deal_8202EECD-41FA-4AAD-9927-90105C5B9391", "BoolValue": false },
+                    { "FieldKey": "deal_6428B433-76DF-439F-B2CD-A2E9F18B854C", "StringValue": populacao },
 
                     // --- Prujuizo 📌 --- //
                     { "FieldKey": "deal_EB570764-56BF-4F80-82A4-029F5B8630D6", "DecimalValue":  Dividas[0]?.prejuizo }, // T1
@@ -453,6 +483,27 @@ export class ApiBacen{
         }
 
         return this.dividas;
+    }
+
+    async ultimos2meses(cpf){
+      const functions = new Objetos();
+      const dados = await this.login();
+
+      this.accessToken = dados.accessToken;
+      this.refreshToken = dados.refreshToken;
+
+      const dadosToken = await this.autenticandoToken();
+
+      const periodos = functions.getUltimos2Meses();
+
+      console.log(periodos);
+
+      for (const { year, month } of periodos) {
+          const res = await this.buscaDividas(cpf, dadosToken.accessToken, year, month);
+          this.dividas.push({ year, month, dados: res });
+      }
+
+      return this.dividas;
     }
 
     /**

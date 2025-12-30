@@ -428,10 +428,113 @@ class CadastroControllers {
     }
   }
 
+  /** -> TESTE/VALIDAÇÂO
+   * Objetivo: Endpoint de teste para gerar gráfico e enviar para o Ploomes
+   * Como funciona: Recebe CPF e DealId, consulta dados do Bacen, gera gráfico, faz upload para Ploomes, e atualiza campo do deal com a URL da imagem
+   */
+  async testeGraficoUpload(req, res) {
+    try {
+      const { cpf, dealId } = req.params;
+
+      if (!cpf || !dealId) {
+        return res.status(400).json({
+          error: "CPF e DealId são obrigatórios",
+          message: "Informe o CPF e DealId para gerar e enviar o gráfico"
+        });
+      }
+
+      // Inicializar APIs
+      const bacen = new (0, _APIChamadasjs.ApiBacen)();
+      const objeto = new (0, _metodosjs.Objetos)();
+      const geradorGrafico = new (0, _GeradorGraficojs.GeradorGrafico)();
+      const ploomesDocumento = new (0, _APIChamadasjs.ApiPloomesDocumento)();
+
+      // Consultar dados dos últimos 12 meses
+      // console.log(`Consultando dados do Bacen para CPF: ${cpf}`);
+      const dados12Meses = await bacen.main(cpf);
+
+      // Encontrar dados válidos
+      let dadosValidos = null;
+      for (const item of dados12Meses) {
+        if (item.dados && !item.dados.error && !item.dados.Erro && item.dados.ResumoDoClienteTraduzido) {
+          dadosValidos = item;
+          break;
+        }
+      }
+
+      if (!dadosValidos) {
+        return res.status(404).json({
+          error: "Nenhum dado válido encontrado",
+          message: "Não foram encontrados dados válidos para o CPF informado"
+        });
+      }
+
+      // Processar dados para o gráfico
+      const dadosGrafico = objeto.processarDadosParaGrafico(dados12Meses);
+
+      if (dadosGrafico.length === 0) {
+        return res.status(404).json({
+          error: "Dados insuficientes para gráfico",
+          message: "Não foram encontrados dados suficientes para gerar o gráfico"
+        });
+      }
+
+      // Gerar gráfico
+      const resultadoGrafico = await geradorGrafico.gerarGraficoEvolucaoDividas(dadosGrafico, cpf);
+
+      if (!resultadoGrafico.success) {
+        return res.status(500).json({
+          error: "Erro ao gerar gráfico",
+          message: resultadoGrafico.message
+        });
+      }
+
+      // Upload para Ploomes
+      const uploadResult = await ploomesDocumento.uploadImageToPloomes(
+        resultadoGrafico.buffer,
+        resultadoGrafico.fileName,
+        dealId
+      );
+
+      let updateResult = null;
+      if (uploadResult.success) {
+        // Atualizar campo OtherProperties (assumindo tomador 0 para teste)
+        const tomadorIndex = 0;
+        updateResult = await ploomesDocumento.updateDealWithGraphImage(
+          dealId,
+          uploadResult.imageUrl,
+          tomadorIndex
+        );
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Gráfico gerado, enviado e campo atualizado com sucesso!",
+        grafico: {
+          fileName: resultadoGrafico.fileName,
+          generatedInMemory: true
+        },
+        upload: uploadResult,
+        fieldUpdate: updateResult
+      });
+
+    } catch (error) {
+      console.error('Erro no teste de upload:', error);
+      return res.status(500).json({
+        error: error.message,
+        message: "Erro interno do servidor"
+      });
+    }
+  }
+
+
   /**
    * Objetivo: Processar deals do Ploomes de forma otimizada, consultando Bacen, gerando gráficos e atualizando campos
    * Como funciona: Busca deals no Ploomes, para cada deal extrai CPFs dos tomadores, consulta Bacen, processa dívidas, gera gráficos, faz upload para Ploomes, atualiza campos de dívidas, gera Excel SCR, tudo com rate limiting para respeitar limites da API
    */
+
+
+
   async storeOtimizado(req, res) {
     try {
       // console.log('🚀 Iniciando processamento otimizado com rate limiting...');
@@ -491,7 +594,6 @@ class CadastroControllers {
            * Como funciona: Verifica se o deal já foi processado, extrai CPFs dos 4 tomadores possíveis, processa cada tomador (consulta Bacen, categoriza dívidas, gera gráfico, faz upload, atualiza campos), e por fim atualiza todos os campos de dívidas no deal
            */
           const processarDeal = async (dealUser) => {
-          // console.log('dealUser', dealUser)
           const { id, StageId, ContactId, otherProps } = dealUser;
 
           if(id == 802129740){
@@ -499,7 +601,8 @@ class CadastroControllers {
           }
 
           if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
-          // console.log(`🔄 Processando Deal ${id}...`);
+          console.log(`🔄 Processando Deal ${id}...`);
+          // console.log(dealUser);
 
           // Inicializar APIs
           const ploomesDocumento = new (0, _APIChamadasjs.ApiPloomesDocumento)();
@@ -513,7 +616,45 @@ class CadastroControllers {
             otherProps['deal_D8603767-5A19-46DC-9B88-2F000BD01096'] || otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D']
           ];
 
-          console.log(cpfCnpjTomadores)
+          // Extrait os CNPJS não participantes.
+          const cpfCnpjPJs = [
+            otherProps['deal_3C86C7F4-CC28-43AB-A211-1FC10E102D98'], // PJ LTDA (1)
+            otherProps['deal_986A2C8A-3A08-4009-9FB0-4A15C6CECCE0'], // PJ LTDA (2)
+            otherProps['deal_C92D2E5C-6001-40BB-A096-032669146910'], // PJ LTDA (3)
+            otherProps['deal_F810F8E0-5290-4CB1-A3F8-192EDD5C1FF0'], // PJ LTDA (4)
+            otherProps['deal_441B58BB-842D-400D-B1B6-DEC311742BC7'], // PJ LTDA (5)
+            otherProps['deal_2D0E193F-4DA4-4C34-A97C-82295C3E0F92'], // PJ LTDA (6)
+            otherProps['deal_FC93A750-9123-4F41-BD70-4063EAC22612'], // PJ LTDA (7)
+            otherProps['deal_6299BA58-9DBE-4396-A431-2322CA6EAE19'], // PJ LTDA (8)
+            otherProps['deal_38AC04A7-5258-4C6C-AFB8-E363D827052E'], // PJ LTDA (9)
+            otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
+          ];
+
+
+          // Capturando a cidade da garantia e a população se já está preenchida ou não.
+          const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
+          const populacaocidadeGarantia = otherProps['deal_6428B433-76DF-439F-B2CD-A2E9F18B854C']
+          let populacaoEncontrada;
+
+          if(!populacaocidadeGarantia){
+
+            let [cidade, uf] = cidadeGarantia.split('-');
+
+            const obj = new (0, _metodosjs.Objetos)();
+
+            try {
+              const pop = await obj.buscandoPopulacao(cidade, uf);
+
+              if (pop === null) {
+                console.log("Cidade não encontrada.");
+                return;
+              }
+
+              populacaoEncontrada = pop;
+            } catch (err) {
+              console.error("Erro ao buscar população:", err.message);
+            }
+          }
 
           /**
            * Objetivo: Processar um tomador individual (CPF) de um deal
@@ -666,6 +807,106 @@ class CadastroControllers {
             }
           };
 
+          const processarPJSNaoParticipantes = async (cnpj, naoParticipanteIndex) => {
+            if (!cnpj) return null;
+
+            try {
+              console.log(`🔄 Processando PJ Não Participante ${naoParticipanteIndex + 1} - CNPJ: ${cnpj}`);
+
+              // Consulta ao Bacen (API externa)
+              const bacen = new (0, _APIChamadasjs.ApiBacen)();
+              const dataBacen = await bacen.ultimos2meses(cnpj);
+
+              // Encontrar dados válidos
+              let dadosValidos = null;
+              for (const item of dataBacen) {
+                if (
+                  _optionalChain([item, 'optionalAccess', _11 => _11.dados]) &&
+                  !item.dados.error &&
+                  !item.dados.Erro &&
+                  item.dados.ResumoDoClienteTraduzido
+                ) {
+                  dadosValidos = item;
+                  break;
+                }
+              }
+
+              if (!dadosValidos) {
+                console.log(`⚠️ Nenhum dado válido encontrado para CNPJ ${cnpj}`);
+                return {
+                  naoParticipanteIndex,
+                  cnpj,
+                  success: false,
+                  error: 'Nenhum dado válido encontrado no Bacen'
+                };
+              }
+
+              // (Opcional) Se você ainda usa isso depois para atualizar algo no final:
+              const retornoJson = objeto.capturandoDividas(dadosValidos);
+
+              // Gerar Excel SCR via API (processamento local)
+              const geradorExcel = new APIGeradorExcelSCR();
+
+              // Limpa excels antigos (OBS: 2880 normalmente é MINUTOS = 48h, não 5 min)
+              await geradorExcel.limparExcelsAntigos(2880);
+
+              let resultadoExcel = null;
+
+              try {
+                resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cnpj);
+
+                if (_optionalChain([resultadoExcel, 'optionalAccess', _12 => _12.success])) {
+                  console.log(`✅ Excel SCR (PJ) gerado com sucesso: ${resultadoExcel.arquivo}`);
+                  console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+                  console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+                } else {
+                  console.log(`❌ Erro ao gerar Excel SCR (PJ): ${_optionalChain([resultadoExcel, 'optionalAccess', _13 => _13.erro]) || 'erro desconhecido'}`);
+                }
+              } catch (errorExcel) {
+                console.error(`❌ Erro na integração Excel SCR (PJ): ${errorExcel.message}`);
+              }
+
+              return {
+                naoParticipanteIndex,
+                cnpj,
+                success: !!_optionalChain([resultadoExcel, 'optionalAccess', _14 => _14.success]),
+                dadosDividas: retornoJson,
+                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _15 => _15.success])
+                  ? {
+                      arquivo: resultadoExcel.arquivo,
+                      nomeArquivo: resultadoExcel.nomeArquivo,
+                      tamanho: resultadoExcel.tamanho,
+                      dataGeracao: resultadoExcel.dataGeracao,
+                      periodosProcessados: resultadoExcel.periodosProcessados
+                    }
+                  : null,
+                error: _optionalChain([resultadoExcel, 'optionalAccess', _16 => _16.success]) ? null : (_optionalChain([resultadoExcel, 'optionalAccess', _17 => _17.erro]) || 'Falha ao gerar Excel SCR')
+              };
+
+            } catch (error) {
+              console.error(`❌ Erro ao processar PJ Não Participante ${naoParticipanteIndex + 1}:`, error.message);
+              return {
+                naoParticipanteIndex,
+                cnpj,
+                success: false,
+                error: error.message
+              };
+            }
+          };
+
+          // Excutando a função responsável por gerar o Excel para as PJS não participante da operação.
+          const cnpjsNaoParticipantes = cpfCnpjPJs; // array que você já criou antes
+
+          const resultadosPJs = [];
+
+          for (let i = 0; i < cnpjsNaoParticipantes.length; i++) {
+            const cnpj = cnpjsNaoParticipantes[i];
+            if (!cnpj) continue;
+
+            const resultado = await processarPJSNaoParticipantes(cnpj, i);
+            resultadosPJs.push(resultado);
+          }
+
           // Processar tomadores sequencialmente para evitar rate limit
           const tomadoresComCPF = cpfCnpjTomadores.map((cpf, index) => ({ cpf, index })).filter(t => t.cpf);
           const resultados = [];
@@ -676,7 +917,7 @@ class CadastroControllers {
             resultados.push(resultado);
 
             // Adicionar dados das dívidas ao array se o processamento foi bem-sucedido
-            if (_optionalChain([resultado, 'optionalAccess', _11 => _11.success]) && resultado.dadosDividas) {
+            if (_optionalChain([resultado, 'optionalAccess', _18 => _18.success]) && resultado.dadosDividas) {
               ArrayDividas.push(objeto.criaTomador(
                 resultado.cpf,
                 resultado.dadosDividas.creditoRotativoVencido,
@@ -721,7 +962,7 @@ class CadastroControllers {
             try {
               // console.log(`🔄 Atualizando campos de dívidas para Deal ${id}...`);
               const updateDividasResult = await executarComRateLimit(() =>
-                deal.UpdateData(id, ContactId, StageId, ArrayDividas)
+                deal.UpdateData(id, ContactId, StageId, ArrayDividas, populacaoEncontrada)
               );
               // console.log(`✅ Campos de dívidas atualizados com sucesso para Deal ${id}`);
             } catch (error) {
@@ -730,7 +971,7 @@ class CadastroControllers {
           }
 
           // Log dos resultados
-          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _12 => _12.success])).length;
+          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _19 => _19.success])).length;
           // console.log(`📊 Deal ${id}: ${sucessos}/${tomadoresComCPF.length} tomadores processados com sucesso`);
 
           return {
@@ -778,11 +1019,11 @@ class CadastroControllers {
       // Resumo final
       const totalDeals = data.length;
       const dealsProcessados = todosOsResultados.length;
-      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _13 => _13.totalTomadores]) || 0), 0);
-      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _14 => _14.sucessos]) || 0), 0);
+      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _20 => _20.totalTomadores]) || 0), 0);
+      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _21 => _21.sucessos]) || 0), 0);
       const totalExcelSCR = todosOsResultados.reduce((acc, r) => {
-        if (_optionalChain([r, 'optionalAccess', _15 => _15.resultados])) {
-          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _16 => _16.excelSCR])).length;
+        if (_optionalChain([r, 'optionalAccess', _22 => _22.resultados])) {
+          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _23 => _23.excelSCR])).length;
         }
         return acc;
       }, 0);
@@ -810,105 +1051,6 @@ class CadastroControllers {
       return res.status(500).json({
         error: error.message,
         dataBacen,
-        message: "Erro interno do servidor"
-      });
-    }
-  }
-
-  /** -> TESTE/VALIDAÇÂO
-   * Objetivo: Endpoint de teste para gerar gráfico e enviar para o Ploomes
-   * Como funciona: Recebe CPF e DealId, consulta dados do Bacen, gera gráfico, faz upload para Ploomes, e atualiza campo do deal com a URL da imagem
-   */
-  async testeGraficoUpload(req, res) {
-    try {
-      const { cpf, dealId } = req.params;
-
-      if (!cpf || !dealId) {
-        return res.status(400).json({
-          error: "CPF e DealId são obrigatórios",
-          message: "Informe o CPF e DealId para gerar e enviar o gráfico"
-        });
-      }
-
-      // Inicializar APIs
-      const bacen = new (0, _APIChamadasjs.ApiBacen)();
-      const objeto = new (0, _metodosjs.Objetos)();
-      const geradorGrafico = new (0, _GeradorGraficojs.GeradorGrafico)();
-      const ploomesDocumento = new (0, _APIChamadasjs.ApiPloomesDocumento)();
-
-      // Consultar dados dos últimos 12 meses
-      // console.log(`Consultando dados do Bacen para CPF: ${cpf}`);
-      const dados12Meses = await bacen.main(cpf);
-
-      // Encontrar dados válidos
-      let dadosValidos = null;
-      for (const item of dados12Meses) {
-        if (item.dados && !item.dados.error && !item.dados.Erro && item.dados.ResumoDoClienteTraduzido) {
-          dadosValidos = item;
-          break;
-        }
-      }
-
-      if (!dadosValidos) {
-        return res.status(404).json({
-          error: "Nenhum dado válido encontrado",
-          message: "Não foram encontrados dados válidos para o CPF informado"
-        });
-      }
-
-      // Processar dados para o gráfico
-      const dadosGrafico = objeto.processarDadosParaGrafico(dados12Meses);
-
-      if (dadosGrafico.length === 0) {
-        return res.status(404).json({
-          error: "Dados insuficientes para gráfico",
-          message: "Não foram encontrados dados suficientes para gerar o gráfico"
-        });
-      }
-
-      // Gerar gráfico
-      const resultadoGrafico = await geradorGrafico.gerarGraficoEvolucaoDividas(dadosGrafico, cpf);
-
-      if (!resultadoGrafico.success) {
-        return res.status(500).json({
-          error: "Erro ao gerar gráfico",
-          message: resultadoGrafico.message
-        });
-      }
-
-      // Upload para Ploomes
-      const uploadResult = await ploomesDocumento.uploadImageToPloomes(
-        resultadoGrafico.buffer,
-        resultadoGrafico.fileName,
-        dealId
-      );
-
-      let updateResult = null;
-      if (uploadResult.success) {
-        // Atualizar campo OtherProperties (assumindo tomador 0 para teste)
-        const tomadorIndex = 0;
-        updateResult = await ploomesDocumento.updateDealWithGraphImage(
-          dealId,
-          uploadResult.imageUrl,
-          tomadorIndex
-        );
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Gráfico gerado, enviado e campo atualizado com sucesso!",
-        grafico: {
-          fileName: resultadoGrafico.fileName,
-          generatedInMemory: true
-        },
-        upload: uploadResult,
-        fieldUpdate: updateResult
-      });
-
-    } catch (error) {
-      console.error('Erro no teste de upload:', error);
-      return res.status(500).json({
-        error: error.message,
         message: "Erro interno do servidor"
       });
     }

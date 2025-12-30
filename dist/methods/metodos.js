@@ -1,4 +1,118 @@
-"use strict";Object.defineProperty(exports, "__esModule", {value: true}); class Objetos{
+"use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; } function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }var _promises = require('fs/promises'); var _promises2 = _interopRequireDefault(_promises);
+var _path = require('path'); var _path2 = _interopRequireDefault(_path);
+var _url = require('url');
+
+const __filename = _url.fileURLToPath.call(void 0, import.meta.url);
+const __dirname = _path2.default.dirname(__filename);
+
+ class Objetos{
+
+  // Cache do arquivo de cidades (evita ler do disco toda hora)
+  static #cidadesCache = null;
+  static #cidadesCachePath = null;
+
+  // Helpers de normalização (ignora acento/caixa/espaços)
+  static #normalizeText(v) {
+    return String(_nullishCoalesce(v, () => ( "")))
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  }
+
+  static #normalizeUF(v) {
+    return String(_nullishCoalesce(v, () => ( ""))).trim().toUpperCase();
+  }
+
+  /**
+   * Carrega o JSON de cidades com validações e cache.
+   * - Se o mesmo arquivo já foi carregado, reutiliza cache
+   */
+  async carregarCidades(arquivoPath = null) {
+    const arquivo =
+      _nullishCoalesce(arquivoPath, () => (
+      _path2.default.resolve(__dirname, '..', 'json', 'geral.json')))
+
+    // cache hit
+    if (Objetos.#cidadesCache && Objetos.#cidadesCachePath === arquivo) {
+      return Objetos.#cidadesCache;
+    }
+
+    let raw;
+    try {
+      raw = await _promises2.default.readFile(arquivo, "utf8");
+    } catch (err) {
+      throw new Error(
+        `Não consegui ler o arquivo de cidades: ${arquivo} (${err.code || "erro"})`
+      );
+    }
+
+    if (!raw || !raw.trim()) {
+      throw new Error(`Arquivo de cidades está vazio: ${arquivo}`);
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      throw new Error(`JSON inválido em ${arquivo}: ${err.message}`);
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error(
+        `Formato inválido: esperado um array no JSON de cidades, veio ${typeof parsed}`
+      );
+    }
+
+    // salva cache
+    Objetos.#cidadesCache = parsed;
+    Objetos.#cidadesCachePath = arquivo;
+
+    return parsed;
+  }
+
+  /**
+   * Busca população por cidade/UF no JSON local.
+   * Retorna:
+   * - number/string (se existir)
+   * - null (se não achar)
+   * Lança erro se arquivo/JSON estiver inválido.
+   */
+
+  async buscandoPopulacao(cidade, uf, options = {}) {
+    const { arquivoPath = null } = options;
+
+    if (!cidade || !uf) {
+      throw new Error(`Parâmetros obrigatórios: cidade e uf. Recebi cidade="${cidade}", uf="${uf}"`);
+    }
+
+    const lista = await this.carregarCidades(arquivoPath);
+
+    const cidadeN = Objetos.#normalizeText(cidade);
+    const ufN = Objetos.#normalizeUF(uf);
+
+    const match = lista.find((row) => {
+      const rowCidade = Objetos.#normalizeText(_nullishCoalesce(_optionalChain([row, 'optionalAccess', _ => _.Cidade]), () => ( _optionalChain([row, 'optionalAccess', _2 => _2.cidade]))));
+      const rowUf = Objetos.#normalizeUF(_nullishCoalesce(_optionalChain([row, 'optionalAccess', _3 => _3.uf]), () => ( _optionalChain([row, 'optionalAccess', _4 => _4.UF]))));
+      return rowCidade === cidadeN && rowUf === ufN;
+    });
+
+    if (!match) return null;
+
+    const pop =
+      _nullishCoalesce(match["População estimada"], () => ( null));
+
+    if (pop == null) {
+      // cidade existe mas o campo não
+      throw new Error(
+        `Cidade encontrada (${cidade}/${uf}), mas sem campo de população. Chaves disponíveis: ${Object.keys(match).join(", ")}`
+      );
+    }
+
+    return pop;
+  }
+
   /**
    * Objetivo: Criar um objeto estruturado com todas as informações de dívidas de um tomador
    * Como funciona: Recebe CPF e valores de todas as modalidades de dívida (vencido e a vencer), e retorna um objeto organizado com todas essas informações
@@ -58,6 +172,27 @@
 
     const periodos = [];
     for (let i = 0; i < 24; i++) {
+      const d = new Date(base);
+      d.setMonth(base.getMonth() - i);
+
+      const year = String(d.getFullYear());
+      const month = String(d.getMonth() + 1).padStart(2, '0'); // 01–12
+
+      periodos.push({ year, month });
+    }
+
+    return periodos;
+  }
+
+  getUltimos2Meses(refDate = new Date()) {
+    const base = new Date(refDate);
+    const dia = base.getDate(); // dia do mês
+    if (dia < 25) {
+      base.setMonth(base.getMonth() - 1);
+    }
+
+    const periodos = [];
+    for (let i = 1; i <= 2; i++) { // 👈 começa do mês anterior
       const d = new Date(base);
       d.setMonth(base.getMonth() - i);
 
