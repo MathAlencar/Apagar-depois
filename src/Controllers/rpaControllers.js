@@ -638,21 +638,25 @@ class CadastroControllers {
 
           if(!populacaocidadeGarantia){
 
-            let [cidade, uf] = cidadeGarantia.split('-');
+            if(cidadeGarantia){
+              let [cidade, uf] = cidadeGarantia.split('-');
 
-            const obj = new Objetos();
+              const obj = new Objetos();
 
-            try {
-              const pop = await obj.buscandoPopulacao(cidade, uf);
+              try {
+                const pop = await obj.buscandoPopulacao(cidade, uf);
 
-              if (pop === null) {
-                console.log("Cidade não encontrada.");
-                return;
+                if (pop === null) {
+                  console.log("Cidade não encontrada.");
+                  return;
+                }
+
+                populacaoEncontrada = pop;
+              } catch (err) {
+                console.error("Erro ao buscar população:", err.message);
               }
-
-              populacaoEncontrada = pop;
-            } catch (err) {
-              console.error("Erro ao buscar população:", err.message);
+            }else {
+              console.log('Nenhuma cidade foi informada.')
             }
           }
 
