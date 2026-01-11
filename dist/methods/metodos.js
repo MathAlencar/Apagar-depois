@@ -249,20 +249,6 @@ const __dirname = _path2.default.dirname(__filename);
     var outrasDividas2AVencer = 0;
     var totalCarteiraAVencer = totalVencer;
 
-	const arrayAntecipacao = [
-		'Adiantamento sobre cambiais entregues',
-		'ARO - adiantamento de receitas orçamentárias',
-		'Recebíveis adquiridos',
-		'Antecipação de fatura de cartão de crédito',
-		'Outros títulos descontados',
-		'Títulos e créditos a receber',
-		'Recebíveis de arranjo de pagamento',
-		'Adiantamentos a depositantes',
-		'Desconto de duplicatas',
-		'Desconto de cheques',
-		'Adiantamento sobre contratos de câmbio'
-	]
-
 	const arrayAquisicao = [
 		'Aquisição de bens – veículos automotores',
 		'Aquisição de bens – outros bens',
@@ -331,6 +317,22 @@ const __dirname = _path2.default.dirname(__filename);
 		'Outros empréstimos'
 	]
 
+  // Antigo Dividas 1;
+  const arrayAntecipacao = [
+		'Adiantamento sobre cambiais entregues',
+		'ARO - adiantamento de receitas orçamentárias',
+		'Recebíveis adquiridos',
+		'Antecipação de fatura de cartão de crédito',
+		'Outros títulos descontados',
+		'Títulos e créditos a receber',
+		'Recebíveis de arranjo de pagamento',
+		'Adiantamentos a depositantes',
+		'Desconto de duplicatas',
+		'Desconto de cheques',
+		'Adiantamento sobre contratos de câmbio'
+	]
+
+  // Antigo Dividas 2 -> porém agora usando no dividas 1.
 	const arrayDividasExtras = [
 		'Adiantamento sobre cambiais entregues',
 		'ARO - adiantamento de receitas orçamentárias',
@@ -368,8 +370,9 @@ const __dirname = _path2.default.dirname(__filename);
 		'Avais e fianças honrados'
 	]
 
+  // Se mantém o seu uso atual;
   const dividasExtrasSomenteVencido = [
-    	'Beneficiários de garantias prestadas para operações com PJ financeira',
+    'Beneficiários de garantias prestadas para operações com PJ financeira',
 		'Beneficiários de garantias prestadas para fundos constitucionais',
 		'Beneficiários de garantias prestadas para participação em processo licitatório',
 		'Coobrigação assumida em cessão com coobrigação para pessoa integrante do SFN',
@@ -381,8 +384,8 @@ const __dirname = _path2.default.dirname(__filename);
 
   for(const value of teste){
 
-    // Antecipação
-		for(const antecipacao of arrayAntecipacao){
+    // Antecipação -> outras dividas 1
+		for(const antecipacao of arrayDividasExtras){
 			if((value.subdominio == antecipacao) && value.tipo == 'VENCIDO'){
 				outrasDividas1Vencido+=value.valorVencimento;
 			}
@@ -391,15 +394,15 @@ const __dirname = _path2.default.dirname(__filename);
 			}
 		}
 
-    // Dividas Extras
-		for(const DividasExtras of arrayDividasExtras){
-			if((value.subdominio == DividasExtras) && value.tipo == 'VENCIDO'){
-				outrasDividas2Vencido+=value.valorVencimento;
-			}
-			if((value.subdominio == DividasExtras) && value.tipo == 'A VENCER'){
-				outrasDividas2AVencer+=value.valorVencimento;
-			}
-		}
+    // // Dividas Extras -> No momento foi solicitado somente apenas jogar tudo na Dividas 1 e não na Dívidas 2.
+		// for(const DividasExtras of arrayDividasExtras){
+		// 	if((value.subdominio == DividasExtras) && value.tipo == 'VENCIDO'){
+		// 		outrasDividas2Vencido+=value.valorVencimento;
+		// 	}
+		// 	if((value.subdominio == DividasExtras) && value.tipo == 'A VENCER'){
+		// 		outrasDividas2AVencer+=value.valorVencimento;
+		// 	}
+		// }
 
 		// Dividas Extras somar somente o que for vencido, nunca somar o "a vencer" junto com vencido.
 		for(const DividasExtrasSomenteVencido of dividasExtrasSomenteVencido){
@@ -654,5 +657,10 @@ const __dirname = _path2.default.dirname(__filename);
     });
 
     return dadosGrafico;
+  }
+
+  formatarPopulacao(valor) {
+    if (valor == null || isNaN(valor)) return '0';
+    return Number(valor).toLocaleString('pt-BR');
   }
 } exports.Objetos = Objetos;

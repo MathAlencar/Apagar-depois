@@ -630,7 +630,6 @@ class CadastroControllers {
             otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
           ];
 
-
           // Capturando a cidade da garantia e a população se já está preenchida ou não.
           const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
           const populacaocidadeGarantia = otherProps['deal_6428B433-76DF-439F-B2CD-A2E9F18B854C']
@@ -651,7 +650,9 @@ class CadastroControllers {
                   return;
                 }
 
-                populacaoEncontrada = pop;
+                console.log('população: ', obj.formatarPopulacao(pop));
+
+                populacaoEncontrada = obj.formatarPopulacao(pop);
               } catch (err) {
                 console.error("Erro ao buscar população:", err.message);
               }
