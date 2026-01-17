@@ -237,28 +237,28 @@ class APIGeradorExcelSCR {
       const buffer = Buffer.from(response.data);
 
       // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
-      if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
-        const texto = buffer.toString('utf8');
-        let msgErro = texto;
+      // if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+      //   const texto = buffer.toString('utf8');
+      //   let msgErro = texto;
 
-        // tenta parsear como JSON para pegar { error: "..." }
-        try {
-          const json = JSON.parse(texto);
-          if (json.error) msgErro = json.error;
-        } catch (_) {
-          // se não for JSON, mantém texto cru mesmo
-        }
+      //   // tenta parsear como JSON para pegar { error: "..." }
+      //   try {
+      //     const json = JSON.parse(texto);
+      //     if (json.error) msgErro = json.error;
+      //   } catch (_) {
+      //     // se não for JSON, mantém texto cru mesmo
+      //   }
 
-        console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
+      //   console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
 
-        return {
-          success: false,
-          erro: msgErro,
-          statusCode: response.status,
-          cpfCliente,
-          arquivo: null
-        };
-      }
+      //   return {
+      //     success: false,
+      //     erro: msgErro,
+      //     statusCode: response.status,
+      //     cpfCliente,
+      //     arquivo: null
+      //   };
+      // }
 
       // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
       fs.writeFileSync(caminhoCompleto, buffer);
@@ -602,7 +602,6 @@ class CadastroControllers {
 
           if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
           console.log(`🔄 Processando Deal ${id}...`);
-          // console.log(dealUser);
 
           // Inicializar APIs
           const ploomesDocumento = new ApiPloomesDocumento();
@@ -629,6 +628,8 @@ class CadastroControllers {
             otherProps['deal_38AC04A7-5258-4C6C-AFB8-E363D827052E'], // PJ LTDA (9)
             otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
           ];
+
+          console.log(cpfCnpjPJs)
 
           // Capturando a cidade da garantia e a população se já está preenchida ou não.
           const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
@@ -684,12 +685,29 @@ class CadastroControllers {
                 }
               }
 
-              if (!dadosValidos) {
-                console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
-                return null;
-              }
+              // if (!dadosValidos) {
+
+              //   try {
+              //     // console.log(`📊 Gerando Excel SCR via API para CPF ${cpf}...`);
+              //     resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpf);
+
+              //     if (resultadoExcel.success) {
+              //       console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
+              //       console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+              //       console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+              //     } else {
+              //       console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
+              //     }
+              //   } catch (errorExcel) {
+              //     console.error(`❌ Erro na integração Excel SCR: ${errorExcel.message}`);
+              //   }
+
+              //   console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
+              //   return null;
+              // }
 
               // Capturar dados das dívidas
+
               const retornoJson = objeto.capturandoDividas(dadosValidos);
 
               // Gerar gráfico (sem rate limiting - é processamento local)
@@ -836,17 +854,18 @@ class CadastroControllers {
                 }
               }
 
-              if (!dadosValidos) {
-                console.log(`⚠️ Nenhum dado válido encontrado para CNPJ ${cnpj}`);
-                return {
-                  naoParticipanteIndex,
-                  cnpj,
-                  success: false,
-                  error: 'Nenhum dado válido encontrado no Bacen'
-                };
-              }
+              // if (!dadosValidos) {
+              //   console.log(`⚠️ Nenhum dado válido encontrado para CNPJ ${cnpj}`);
+              //   return {
+              //     naoParticipanteIndex,
+              //     cnpj,
+              //     success: false,
+              //     error: 'Nenhum dado válido encontrado no Bacen'
+              //   };
+              // }
 
               // (Opcional) Se você ainda usa isso depois para atualizar algo no final:
+
               const retornoJson = objeto.capturandoDividas(dadosValidos);
 
               // Gerar Excel SCR via API (processamento local)

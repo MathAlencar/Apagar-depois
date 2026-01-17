@@ -237,28 +237,28 @@ class APIGeradorExcelSCR {
       const buffer = Buffer.from(response.data);
 
       // 🔴 SE NÃO FOR EXCEL, É ERRO → NÃO SALVA COMO XLSX
-      if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
-        const texto = buffer.toString('utf8');
-        let msgErro = texto;
+      // if (!contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+      //   const texto = buffer.toString('utf8');
+      //   let msgErro = texto;
 
-        // tenta parsear como JSON para pegar { error: "..." }
-        try {
-          const json = JSON.parse(texto);
-          if (json.error) msgErro = json.error;
-        } catch (_) {
-          // se não for JSON, mantém texto cru mesmo
-        }
+      //   // tenta parsear como JSON para pegar { error: "..." }
+      //   try {
+      //     const json = JSON.parse(texto);
+      //     if (json.error) msgErro = json.error;
+      //   } catch (_) {
+      //     // se não for JSON, mantém texto cru mesmo
+      //   }
 
-        console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
+      //   console.error('❌ API SCR não retornou Excel. Conteúdo:', msgErro);
 
-        return {
-          success: false,
-          erro: msgErro,
-          statusCode: response.status,
-          cpfCliente,
-          arquivo: null
-        };
-      }
+      //   return {
+      //     success: false,
+      //     erro: msgErro,
+      //     statusCode: response.status,
+      //     cpfCliente,
+      //     arquivo: null
+      //   };
+      // }
 
       // ✅ Chegou aqui? É Excel mesmo → salva o arquivo
       _fs2.default.writeFileSync(caminhoCompleto, buffer);
@@ -420,10 +420,10 @@ class CadastroControllers {
         ploomes: data,
       });
     } catch (err) {
-      console.error(_optionalChain([err, 'access', _2 => _2.response, 'optionalAccess', _3 => _3.data]) || err.message);
+      console.error(_optionalChain([err, 'access', _ => _.response, 'optionalAccess', _2 => _2.data]) || err.message);
       return res.status(500).json({
         error: 'Falha ao enviar imagem para o Ploomes',
-        detail: _optionalChain([err, 'access', _4 => _4.response, 'optionalAccess', _5 => _5.data]) || err.message,
+        detail: _optionalChain([err, 'access', _3 => _3.response, 'optionalAccess', _4 => _4.data]) || err.message,
       });
     }
   }
@@ -602,7 +602,6 @@ class CadastroControllers {
 
           if(otherProps['deal_8202EECD-41FA-4AAD-9927-90105C5B9391'] == true){
           console.log(`🔄 Processando Deal ${id}...`);
-          // console.log(dealUser);
 
           // Inicializar APIs
           const ploomesDocumento = new (0, _APIChamadasjs.ApiPloomesDocumento)();
@@ -629,6 +628,8 @@ class CadastroControllers {
             otherProps['deal_38AC04A7-5258-4C6C-AFB8-E363D827052E'], // PJ LTDA (9)
             otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
           ];
+
+          console.log(cpfCnpjPJs)
 
           // Capturando a cidade da garantia e a população se já está preenchida ou não.
           const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
@@ -684,12 +685,29 @@ class CadastroControllers {
                 }
               }
 
-              if (!dadosValidos) {
-                console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
-                return null;
-              }
+              // if (!dadosValidos) {
+
+              //   try {
+              //     // console.log(`📊 Gerando Excel SCR via API para CPF ${cpf}...`);
+              //     resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpf);
+
+              //     if (resultadoExcel.success) {
+              //       console.log(`✅ Excel SCR gerado com sucesso: ${resultadoExcel.arquivo}`);
+              //       console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+              //       console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+              //     } else {
+              //       console.log(`❌ Erro ao gerar Excel SCR: ${resultadoExcel.erro}`);
+              //     }
+              //   } catch (errorExcel) {
+              //     console.error(`❌ Erro na integração Excel SCR: ${errorExcel.message}`);
+              //   }
+
+              //   console.log(`⚠️ Nenhum dado válido encontrado para CPF ${cpf}`);
+              //   return null;
+              // }
 
               // Capturar dados das dívidas
+
               const retornoJson = objeto.capturandoDividas(dadosValidos);
 
               // Gerar gráfico (sem rate limiting - é processamento local)
@@ -722,7 +740,7 @@ class CadastroControllers {
                       return resultado;
                     }
                   } catch (error) {
-                    if (_optionalChain([error, 'access', _6 => _6.response, 'optionalAccess', _7 => _7.status]) === 429 && i < tentativas - 1) {
+                    if (_optionalChain([error, 'access', _5 => _5.response, 'optionalAccess', _6 => _6.status]) === 429 && i < tentativas - 1) {
                       // console.log(`⏳ Rate limit atingido, aguardando 2s antes da tentativa ${i + 2}...`);
                       await new Promise(resolve => setTimeout(resolve, 2000));
                       continue;
@@ -750,7 +768,7 @@ class CadastroControllers {
                       return resultado;
                     }
                   } catch (error) {
-                    if (_optionalChain([error, 'access', _8 => _8.response, 'optionalAccess', _9 => _9.status]) === 429 && i < tentativas - 1) {
+                    if (_optionalChain([error, 'access', _7 => _7.response, 'optionalAccess', _8 => _8.status]) === 429 && i < tentativas - 1) {
                       // console.log(`⏳ Rate limit atingido, aguardando 2s antes da tentativa ${i + 2}...`);
                       await new Promise(resolve => setTimeout(resolve, 2000));
                       continue;
@@ -792,7 +810,7 @@ class CadastroControllers {
                 uploadResult,
                 updateResult,
                 dadosDividas: retornoJson, // Incluir dados das dívidas para atualização posterior
-                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _10 => _10.success]) ? {
+                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _9 => _9.success]) ? {
                   arquivo: resultadoExcel.arquivo,
                   nomeArquivo: resultadoExcel.nomeArquivo,
                   tamanho: resultadoExcel.tamanho,
@@ -826,7 +844,7 @@ class CadastroControllers {
               let dadosValidos = null;
               for (const item of dataBacen) {
                 if (
-                  _optionalChain([item, 'optionalAccess', _11 => _11.dados]) &&
+                  _optionalChain([item, 'optionalAccess', _10 => _10.dados]) &&
                   !item.dados.error &&
                   !item.dados.Erro &&
                   item.dados.ResumoDoClienteTraduzido
@@ -836,17 +854,18 @@ class CadastroControllers {
                 }
               }
 
-              if (!dadosValidos) {
-                console.log(`⚠️ Nenhum dado válido encontrado para CNPJ ${cnpj}`);
-                return {
-                  naoParticipanteIndex,
-                  cnpj,
-                  success: false,
-                  error: 'Nenhum dado válido encontrado no Bacen'
-                };
-              }
+              // if (!dadosValidos) {
+              //   console.log(`⚠️ Nenhum dado válido encontrado para CNPJ ${cnpj}`);
+              //   return {
+              //     naoParticipanteIndex,
+              //     cnpj,
+              //     success: false,
+              //     error: 'Nenhum dado válido encontrado no Bacen'
+              //   };
+              // }
 
               // (Opcional) Se você ainda usa isso depois para atualizar algo no final:
+
               const retornoJson = objeto.capturandoDividas(dadosValidos);
 
               // Gerar Excel SCR via API (processamento local)
@@ -860,12 +879,12 @@ class CadastroControllers {
               try {
                 resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cnpj);
 
-                if (_optionalChain([resultadoExcel, 'optionalAccess', _12 => _12.success])) {
+                if (_optionalChain([resultadoExcel, 'optionalAccess', _11 => _11.success])) {
                   console.log(`✅ Excel SCR (PJ) gerado com sucesso: ${resultadoExcel.arquivo}`);
                   console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
                   console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
                 } else {
-                  console.log(`❌ Erro ao gerar Excel SCR (PJ): ${_optionalChain([resultadoExcel, 'optionalAccess', _13 => _13.erro]) || 'erro desconhecido'}`);
+                  console.log(`❌ Erro ao gerar Excel SCR (PJ): ${_optionalChain([resultadoExcel, 'optionalAccess', _12 => _12.erro]) || 'erro desconhecido'}`);
                 }
               } catch (errorExcel) {
                 console.error(`❌ Erro na integração Excel SCR (PJ): ${errorExcel.message}`);
@@ -874,9 +893,9 @@ class CadastroControllers {
               return {
                 naoParticipanteIndex,
                 cnpj,
-                success: !!_optionalChain([resultadoExcel, 'optionalAccess', _14 => _14.success]),
+                success: !!_optionalChain([resultadoExcel, 'optionalAccess', _13 => _13.success]),
                 dadosDividas: retornoJson,
-                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _15 => _15.success])
+                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _14 => _14.success])
                   ? {
                       arquivo: resultadoExcel.arquivo,
                       nomeArquivo: resultadoExcel.nomeArquivo,
@@ -885,7 +904,7 @@ class CadastroControllers {
                       periodosProcessados: resultadoExcel.periodosProcessados
                     }
                   : null,
-                error: _optionalChain([resultadoExcel, 'optionalAccess', _16 => _16.success]) ? null : (_optionalChain([resultadoExcel, 'optionalAccess', _17 => _17.erro]) || 'Falha ao gerar Excel SCR')
+                error: _optionalChain([resultadoExcel, 'optionalAccess', _15 => _15.success]) ? null : (_optionalChain([resultadoExcel, 'optionalAccess', _16 => _16.erro]) || 'Falha ao gerar Excel SCR')
               };
 
             } catch (error) {
@@ -922,7 +941,7 @@ class CadastroControllers {
             resultados.push(resultado);
 
             // Adicionar dados das dívidas ao array se o processamento foi bem-sucedido
-            if (_optionalChain([resultado, 'optionalAccess', _18 => _18.success]) && resultado.dadosDividas) {
+            if (_optionalChain([resultado, 'optionalAccess', _17 => _17.success]) && resultado.dadosDividas) {
               ArrayDividas.push(objeto.criaTomador(
                 resultado.cpf,
                 resultado.dadosDividas.creditoRotativoVencido,
@@ -976,7 +995,7 @@ class CadastroControllers {
           }
 
           // Log dos resultados
-          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _19 => _19.success])).length;
+          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _18 => _18.success])).length;
           // console.log(`📊 Deal ${id}: ${sucessos}/${tomadoresComCPF.length} tomadores processados com sucesso`);
 
           return {
@@ -1024,11 +1043,11 @@ class CadastroControllers {
       // Resumo final
       const totalDeals = data.length;
       const dealsProcessados = todosOsResultados.length;
-      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _20 => _20.totalTomadores]) || 0), 0);
-      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _21 => _21.sucessos]) || 0), 0);
+      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _19 => _19.totalTomadores]) || 0), 0);
+      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _20 => _20.sucessos]) || 0), 0);
       const totalExcelSCR = todosOsResultados.reduce((acc, r) => {
-        if (_optionalChain([r, 'optionalAccess', _22 => _22.resultados])) {
-          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _23 => _23.excelSCR])).length;
+        if (_optionalChain([r, 'optionalAccess', _21 => _21.resultados])) {
+          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _22 => _22.excelSCR])).length;
         }
         return acc;
       }, 0);
