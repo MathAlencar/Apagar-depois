@@ -27,7 +27,7 @@ const PUBLIC_DIR_UPLOAD = path.join(__dirname, '../Front-end/Documentos Excel/')
 /**
  * Classe principal da aplicação Express
  * Objetivo: Configurar e inicializar o servidor Express com middlewares e rotas
- * Como funciona: No construtor inicializa Express, configura middlewares (CORS, JSON, arquivos estáticos), e registra todas as rotas da aplicação
+ * Como funciona: No construtor inicializa Express, configura middlewares (CORS, JSsON, arquivos estáticos), e registra todas as rotas da aplicação
  */
 class App {
   constructor() {

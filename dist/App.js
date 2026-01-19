@@ -27,7 +27,7 @@ const PUBLIC_DIR_UPLOAD = _path2.default.join(__dirname, '../Front-end/Documento
 /**
  * Classe principal da aplicação Express
  * Objetivo: Configurar e inicializar o servidor Express com middlewares e rotas
- * Como funciona: No construtor inicializa Express, configura middlewares (CORS, JSON, arquivos estáticos), e registra todas as rotas da aplicação
+ * Como funciona: No construtor inicializa Express, configura middlewares (CORS, JSsON, arquivos estáticos), e registra todas as rotas da aplicação
  */
 class App {
   constructor() {
