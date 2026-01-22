@@ -11,7 +11,7 @@ export class Objetos{
   static #cidadesCache = null;
   static #cidadesCachePath = null;
 
-  // Helpers de normalização (ignora acento/caixa/espaços)
+  // Helpers de normalização (ignora acento/caixa/espasços)
   static #normalizeText(v) {
     return String(v ?? "")
       .trim()

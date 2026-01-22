@@ -11,7 +11,7 @@ const __dirname = _path2.default.dirname(__filename);
   static #cidadesCache = null;
   static #cidadesCachePath = null;
 
-  // Helpers de normalização (ignora acento/caixa/espaços)
+  // Helpers de normalização (ignora acento/caixa/espasços)
   static #normalizeText(v) {
     return String(_nullishCoalesce(v, () => ( "")))
       .trim()
