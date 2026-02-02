@@ -516,7 +516,7 @@ const __dirname = _path2.default.dirname(__filename);
 			if((value.subdominio == rural) && value.tipo == 'VENCIDO'){
 				ruralVencido+=value.valorVencimento;
 			}
-			if((value.subdominio == rural) && value.tipo == 'A VENCER'){
+			if((value.subdominio == rural) && value.tipo == 'A VENCER' && (rural !== 'CPR - Cédula de Produto Rural')){
 				ruralAVencer+=value.valorVencimento;
 			}
 		}
