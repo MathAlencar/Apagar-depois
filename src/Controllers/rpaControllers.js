@@ -615,6 +615,14 @@ class CadastroControllers {
             otherProps['deal_D8603767-5A19-46DC-9B88-2F000BD01096'] || otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D']
           ];
 
+          // Extrair CPFs - CNPJs dos garantidores
+          const cpfCnpjGarantidores = [
+          otherProps['deal_50673E76-8C32-48EB-ACB6-B8897DD60D7B'] || otherProps['deal_49C9E291-E75F-4DAA-8AF3-0C53E70C4DD1'],
+            otherProps['deal_E3771332-4430-48C9-9AA8-5B84C2DEAA5C'] || otherProps['deal_650C6DF1-BE94-4947-BED6-FB851A6793BE'],
+            otherProps['deal_74034139-270D-44FF-943B-AD2AFCD8C6A5'] || otherProps['deal_7D09BAF8-3042-4917-A51B-F5A7C5E6C2CC'],
+            otherProps['deal_BD082B4E-98C4-4F22-B9FF-37B507A198EA'] || otherProps['deal_081A4E2B-A486-48E6-9FA8-9FAB568E9603']
+          ];
+
           // Extrait os CNPJS não participantes.
           const cpfCnpjPJs = [
             otherProps['deal_3C86C7F4-CC28-43AB-A211-1FC10E102D98'], // PJ LTDA (1)
@@ -629,7 +637,7 @@ class CadastroControllers {
             otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
           ];
 
-          console.log(cpfCnpjPJs)
+          console.log('garantidores: ', cpfCnpjGarantidores);
 
           // Capturando a cidade da garantia e a população se já está preenchida ou não.
           const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
@@ -918,6 +926,83 @@ class CadastroControllers {
             }
           };
 
+          const processarGarantidores = async (cpfCnpj, garantidorIndex) => {
+            if (!cpfCnpj) return null;
+
+            try {
+              console.log(`🔄 Processando garantidor ${garantidorIndex + 1} - cpfCnpj: ${cpfCnpj}`);
+
+              // Consulta ao Bacen (API externa)
+              const bacen = new ApiBacen();
+              const dataBacen = await bacen.ultimos2meses(cpfCnpj);
+
+              // Encontrar dados válidos
+              let dadosValidos = null;
+              for (const item of dataBacen) {
+                if (
+                  item?.dados &&
+                  !item.dados.error &&
+                  !item.dados.Erro &&
+                  item.dados.ResumoDoClienteTraduzido
+                ) {
+                  dadosValidos = item;
+                  break;
+                }
+              }
+              // (Opcional) Se você ainda usa isso depois para atualizar algo no final:
+
+              const retornoJson = objeto.capturandoDividas(dadosValidos);
+
+              // Gerar Excel SCR via API (processamento local)
+              const geradorExcel = new APIGeradorExcelSCR();
+
+              // Limpa excels antigos (OBS: 2880 normalmente é MINUTOS = 48h, não 5 min)
+              await geradorExcel.limparExcelsAntigos(2880);
+
+              let resultadoExcel = null;
+
+              try {
+                resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpfCnpj);
+
+                if (resultadoExcel?.success) {
+                  console.log(`✅ Excel SCR (PJ) gerado com sucesso: ${resultadoExcel.arquivo}`);
+                  console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+                  console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+                } else {
+                  console.log(`❌ Erro ao gerar Excel SCR (PJ): ${resultadoExcel?.erro || 'erro desconhecido'}`);
+                }
+              } catch (errorExcel) {
+                console.error(`❌ Erro na integração Excel SCR (PJ): ${errorExcel.message}`);
+              }
+
+              return {
+                garantidorIndex,
+                cpfCnpj,
+                success: !!resultadoExcel?.success,
+                dadosDividas: retornoJson,
+                excelSCR: resultadoExcel?.success
+                  ? {
+                      arquivo: resultadoExcel.arquivo,
+                      nomeArquivo: resultadoExcel.nomeArquivo,
+                      tamanho: resultadoExcel.tamanho,
+                      dataGeracao: resultadoExcel.dataGeracao,
+                      periodosProcessados: resultadoExcel.periodosProcessados
+                    }
+                  : null,
+                error: resultadoExcel?.success ? null : (resultadoExcel?.erro || 'Falha ao gerar Excel SCR')
+              };
+
+            } catch (error) {
+              console.error(`❌ Erro ao processar PJ Não Participante ${garantidorIndex + 1}:`, error.message);
+              return {
+                garantidorIndex,
+                cpfCnpj,
+                success: false,
+                error: error.message
+              };
+            }
+          };
+
           // Excutando a função responsável por gerar o Excel para as PJS não participante da operação.
           const cnpjsNaoParticipantes = cpfCnpjPJs; // array que você já criou antes
 
@@ -929,6 +1014,17 @@ class CadastroControllers {
 
             const resultado = await processarPJSNaoParticipantes(cnpj, i);
             resultadosPJs.push(resultado);
+          }
+
+          // Processando Garantidores da operação;
+          const resultadoGarantidores = [];
+
+          for (let i = 0; i < cpfCnpjGarantidores.length; i++) {
+            const cpfCnpj = cpfCnpjGarantidores[i];
+            if (!cpfCnpj) continue;
+
+            const resultadoGarantidor = await processarGarantidores(cpfCnpj, i);
+            resultadoGarantidores.push(resultadoGarantidor);
           }
 
           // Processar tomadores sequencialmente para evitar rate limit
@@ -1052,11 +1148,6 @@ class CadastroControllers {
         return acc;
       }, 0);
 
-      // console.log(`🎉 Processamento concluído!`);
-      // console.log(`📊 ${dealsProcessados}/${totalDeals} deals processados`);
-      // console.log(`👥 ${totalSucessos}/${totalTomadores} tomadores processados com sucesso`);
-      // console.log(`📈 ${totalExcelSCR} Excel SCR gerados com sucesso`);
-
       return res.status(200).json({
         success: true,
         message: "Processamento otimizado com rate limiting concluído!",
@@ -1074,7 +1165,6 @@ class CadastroControllers {
       console.error('❌ Erro no processamento otimizado:', error);
       return res.status(500).json({
         error: error.message,
-        dataBacen,
         message: "Erro interno do servidor"
       });
     }

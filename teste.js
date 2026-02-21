@@ -1,46 +1,56 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const resultado = (function () {
+  const datasNascimento = [
+    "1952-02-08T21:19:05.581Z",
+    "1952-02-08T21:19:05.581Z",
+    "1952-02-08T21:19:05.581Z",
+    "1952-02-08T21:19:05.581Z"
+  ];
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+  const hoje = new Date();
 
-async function buscandoPopulacao(cidade, uf) {
-  const arquivo = path.resolve(__dirname, '..', 'RPA - FINAL', 'json', 'geral.json');
+  function calcularIdade(data) {
+    const nascimento = new Date(data);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
 
-  if (!fs.existsSync(arquivo)) {
-    console.error('Arquivo não existe:', arquivo);
-    return;
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+
+    return idade;
   }
 
-  fs.readFile(arquivo, 'utf8', (err, data) => {
-    if (err) {
-      console.error('Error reading file:', err);
-      return;
+  let maiorIdade = 0;
+
+  datasNascimento.forEach(data => {
+    if (data) {
+      const idade = calcularIdade(data);
+      if (idade > maiorIdade) {
+        maiorIdade = idade;
+      }
     }
-
-    const toJson = JSON.parse(data);
-
-    const result = toJson.filter((value) => value.Cidade == cidade && value.uf == uf);
-
-    if(result.length > 0){
-      const populacao = result[0]["População"]
-      return populacao;
-    }else{
-      console.log('Nenhuma cidade encontrada');
-      return;
-    }
-
   });
 
-}
+  if (maiorIdade === 0) return 0;
 
-async function main() {
-  await buscandoPopulacao('São Paulo', 'SP');
-}
+  if (maiorIdade < 65) return 180;
 
-main();
+  const anosRestantes = 80 - maiorIdade;
 
+  if (anosRestantes <= 0) return 0;
 
+  const mesesMaximos = anosRestantes * 12;
 
+  const prazosPadrao = [36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180];
 
+  let prazoFinal = 0;
+  prazosPadrao.forEach(prazo => {
+    if (prazo <= mesesMaximos) {
+      prazoFinal = prazo;
+    }
+  });
+
+  return prazoFinal;
+})();
+
+console.log(resultado);

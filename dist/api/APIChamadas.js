@@ -51,11 +51,26 @@ _dotenv2.default.config();
             `FieldKey eq 'deal_FC93A750-9123-4F41-BD70-4063EAC22612' or ` +
             `FieldKey eq 'deal_6299BA58-9DBE-4396-A431-2322CA6EAE19' or ` +
             `FieldKey eq 'deal_38AC04A7-5258-4C6C-AFB8-E363D827052E' or ` +
-            `FieldKey eq 'deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3'` +
+            `FieldKey eq 'deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3' or ` +
+
+            // Garantidor 1 ===
+            `FieldKey eq 'deal_50673E76-8C32-48EB-ACB6-B8897DD60D7B' or ` +
+            `FieldKey eq 'deal_49C9E291-E75F-4DAA-8AF3-0C53E70C4DD1' or ` +
+
+            // Garantidor 2 ===
+            `FieldKey eq 'deal_E3771332-4430-48C9-9AA8-5B84C2DEAA5C' or ` +
+            `FieldKey eq 'deal_650C6DF1-BE94-4947-BED6-FB851A6793BE' or ` +
+
+            // Garantidor 3 ===
+            `FieldKey eq 'deal_74034139-270D-44FF-943B-AD2AFCD8C6A5' or ` +
+            `FieldKey eq 'deal_7D09BAF8-3042-4917-A51B-F5A7C5E6C2CC'` +
+
+            // // Garantidor 4 === ERRO
+            // `FieldKey eq 'deal_BD082B4E-98C4-4F22-B9FF-37B507A198EA' or ` +
+            // `FieldKey eq 'deal_081A4E2B-A486-48E6-9FA8-9FAB568E9603'` +
 
             `)` +
             `&$filter=StatusId eq 1 and StageId eq 185072`;
-
 
             const negocios = await _axiosjs.apiPloomes.get(url,
             {

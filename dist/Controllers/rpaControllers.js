@@ -615,6 +615,14 @@ class CadastroControllers {
             otherProps['deal_D8603767-5A19-46DC-9B88-2F000BD01096'] || otherProps['deal_98CF5047-B79D-43EC-89A8-EA4E6863A24D']
           ];
 
+          // Extrair CPFs - CNPJs dos garantidores
+          const cpfCnpjGarantidores = [
+          otherProps['deal_50673E76-8C32-48EB-ACB6-B8897DD60D7B'] || otherProps['deal_49C9E291-E75F-4DAA-8AF3-0C53E70C4DD1'],
+            otherProps['deal_E3771332-4430-48C9-9AA8-5B84C2DEAA5C'] || otherProps['deal_650C6DF1-BE94-4947-BED6-FB851A6793BE'],
+            otherProps['deal_74034139-270D-44FF-943B-AD2AFCD8C6A5'] || otherProps['deal_7D09BAF8-3042-4917-A51B-F5A7C5E6C2CC'],
+            otherProps['deal_BD082B4E-98C4-4F22-B9FF-37B507A198EA'] || otherProps['deal_081A4E2B-A486-48E6-9FA8-9FAB568E9603']
+          ];
+
           // Extrait os CNPJS não participantes.
           const cpfCnpjPJs = [
             otherProps['deal_3C86C7F4-CC28-43AB-A211-1FC10E102D98'], // PJ LTDA (1)
@@ -629,7 +637,7 @@ class CadastroControllers {
             otherProps['deal_1DC2AFA0-294D-4220-A66A-0C6B8F49DDB3']  // PJ LTDA (10)
           ];
 
-          console.log(cpfCnpjPJs)
+          console.log('garantidores: ', cpfCnpjGarantidores);
 
           // Capturando a cidade da garantia e a população se já está preenchida ou não.
           const cidadeGarantia = otherProps['deal_CF20FE57-AC53-4620-ADAC-7E5BB998B1B8']
@@ -918,6 +926,83 @@ class CadastroControllers {
             }
           };
 
+          const processarGarantidores = async (cpfCnpj, garantidorIndex) => {
+            if (!cpfCnpj) return null;
+
+            try {
+              console.log(`🔄 Processando garantidor ${garantidorIndex + 1} - cpfCnpj: ${cpfCnpj}`);
+
+              // Consulta ao Bacen (API externa)
+              const bacen = new (0, _APIChamadasjs.ApiBacen)();
+              const dataBacen = await bacen.ultimos2meses(cpfCnpj);
+
+              // Encontrar dados válidos
+              let dadosValidos = null;
+              for (const item of dataBacen) {
+                if (
+                  _optionalChain([item, 'optionalAccess', _17 => _17.dados]) &&
+                  !item.dados.error &&
+                  !item.dados.Erro &&
+                  item.dados.ResumoDoClienteTraduzido
+                ) {
+                  dadosValidos = item;
+                  break;
+                }
+              }
+              // (Opcional) Se você ainda usa isso depois para atualizar algo no final:
+
+              const retornoJson = objeto.capturandoDividas(dadosValidos);
+
+              // Gerar Excel SCR via API (processamento local)
+              const geradorExcel = new APIGeradorExcelSCR();
+
+              // Limpa excels antigos (OBS: 2880 normalmente é MINUTOS = 48h, não 5 min)
+              await geradorExcel.limparExcelsAntigos(2880);
+
+              let resultadoExcel = null;
+
+              try {
+                resultadoExcel = await geradorExcel.gerarExcelSCR(dataBacen, cpfCnpj);
+
+                if (_optionalChain([resultadoExcel, 'optionalAccess', _18 => _18.success])) {
+                  console.log(`✅ Excel SCR (PJ) gerado com sucesso: ${resultadoExcel.arquivo}`);
+                  console.log(`📏 Tamanho: ${resultadoExcel.tamanho} bytes`);
+                  console.log(`📅 Períodos processados: ${resultadoExcel.periodosProcessados}`);
+                } else {
+                  console.log(`❌ Erro ao gerar Excel SCR (PJ): ${_optionalChain([resultadoExcel, 'optionalAccess', _19 => _19.erro]) || 'erro desconhecido'}`);
+                }
+              } catch (errorExcel) {
+                console.error(`❌ Erro na integração Excel SCR (PJ): ${errorExcel.message}`);
+              }
+
+              return {
+                garantidorIndex,
+                cpfCnpj,
+                success: !!_optionalChain([resultadoExcel, 'optionalAccess', _20 => _20.success]),
+                dadosDividas: retornoJson,
+                excelSCR: _optionalChain([resultadoExcel, 'optionalAccess', _21 => _21.success])
+                  ? {
+                      arquivo: resultadoExcel.arquivo,
+                      nomeArquivo: resultadoExcel.nomeArquivo,
+                      tamanho: resultadoExcel.tamanho,
+                      dataGeracao: resultadoExcel.dataGeracao,
+                      periodosProcessados: resultadoExcel.periodosProcessados
+                    }
+                  : null,
+                error: _optionalChain([resultadoExcel, 'optionalAccess', _22 => _22.success]) ? null : (_optionalChain([resultadoExcel, 'optionalAccess', _23 => _23.erro]) || 'Falha ao gerar Excel SCR')
+              };
+
+            } catch (error) {
+              console.error(`❌ Erro ao processar PJ Não Participante ${garantidorIndex + 1}:`, error.message);
+              return {
+                garantidorIndex,
+                cpfCnpj,
+                success: false,
+                error: error.message
+              };
+            }
+          };
+
           // Excutando a função responsável por gerar o Excel para as PJS não participante da operação.
           const cnpjsNaoParticipantes = cpfCnpjPJs; // array que você já criou antes
 
@@ -931,6 +1016,17 @@ class CadastroControllers {
             resultadosPJs.push(resultado);
           }
 
+          // Processando Garantidores da operação;
+          const resultadoGarantidores = [];
+
+          for (let i = 0; i < cpfCnpjGarantidores.length; i++) {
+            const cpfCnpj = cpfCnpjGarantidores[i];
+            if (!cpfCnpj) continue;
+
+            const resultadoGarantidor = await processarGarantidores(cpfCnpj, i);
+            resultadoGarantidores.push(resultadoGarantidor);
+          }
+
           // Processar tomadores sequencialmente para evitar rate limit
           const tomadoresComCPF = cpfCnpjTomadores.map((cpf, index) => ({ cpf, index })).filter(t => t.cpf);
           const resultados = [];
@@ -941,7 +1037,7 @@ class CadastroControllers {
             resultados.push(resultado);
 
             // Adicionar dados das dívidas ao array se o processamento foi bem-sucedido
-            if (_optionalChain([resultado, 'optionalAccess', _17 => _17.success]) && resultado.dadosDividas) {
+            if (_optionalChain([resultado, 'optionalAccess', _24 => _24.success]) && resultado.dadosDividas) {
               ArrayDividas.push(objeto.criaTomador(
                 resultado.cpf,
                 resultado.dadosDividas.creditoRotativoVencido,
@@ -995,7 +1091,7 @@ class CadastroControllers {
           }
 
           // Log dos resultados
-          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _18 => _18.success])).length;
+          const sucessos = resultados.filter(r => _optionalChain([r, 'optionalAccess', _25 => _25.success])).length;
           // console.log(`📊 Deal ${id}: ${sucessos}/${tomadoresComCPF.length} tomadores processados com sucesso`);
 
           return {
@@ -1043,19 +1139,14 @@ class CadastroControllers {
       // Resumo final
       const totalDeals = data.length;
       const dealsProcessados = todosOsResultados.length;
-      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _19 => _19.totalTomadores]) || 0), 0);
-      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _20 => _20.sucessos]) || 0), 0);
+      const totalTomadores = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _26 => _26.totalTomadores]) || 0), 0);
+      const totalSucessos = todosOsResultados.reduce((acc, r) => acc + (_optionalChain([r, 'optionalAccess', _27 => _27.sucessos]) || 0), 0);
       const totalExcelSCR = todosOsResultados.reduce((acc, r) => {
-        if (_optionalChain([r, 'optionalAccess', _21 => _21.resultados])) {
-          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _22 => _22.excelSCR])).length;
+        if (_optionalChain([r, 'optionalAccess', _28 => _28.resultados])) {
+          return acc + r.resultados.filter(t => _optionalChain([t, 'optionalAccess', _29 => _29.excelSCR])).length;
         }
         return acc;
       }, 0);
-
-      // console.log(`🎉 Processamento concluído!`);
-      // console.log(`📊 ${dealsProcessados}/${totalDeals} deals processados`);
-      // console.log(`👥 ${totalSucessos}/${totalTomadores} tomadores processados com sucesso`);
-      // console.log(`📈 ${totalExcelSCR} Excel SCR gerados com sucesso`);
 
       return res.status(200).json({
         success: true,
@@ -1074,7 +1165,6 @@ class CadastroControllers {
       console.error('❌ Erro no processamento otimizado:', error);
       return res.status(500).json({
         error: error.message,
-        dataBacen,
         message: "Erro interno do servidor"
       });
     }
