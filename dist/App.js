@@ -18,11 +18,11 @@ var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _Toke
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
 // __dirname em ESM
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = _path2.default.dirname(_filename);
 
-const PUBLIC_DIR = _path2.default.join(__dirname, '../Front-end/Front-end');
-const PUBLIC_DIR_UPLOAD = _path2.default.join(__dirname, '../Front-end/Documentos Excel/');
+const PUBLIC_DIR = _path2.default.join(_dirname, '../Front-end/Front-end');
+const PUBLIC_DIR_UPLOAD = _path2.default.join(_dirname, '../Front-end/Documentos Excel/');
 
 /**
  * Classe principal da aplicação Express
