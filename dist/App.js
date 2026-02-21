@@ -1,6 +1,6 @@
 "use strict";Object.defineProperty(exports, "__esModule", {value: true}); function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }var _dotenv = require('dotenv'); var _dotenv2 = _interopRequireDefault(_dotenv);
 var _path = require('path'); var _path2 = _interopRequireDefault(_path);
-// import { fileURLToPath } from 'url';
+var _url = require('url');
 var _fs = require('fs'); var _fs2 = _interopRequireDefault(_fs);
 var _adminLoginRiqueredjs = require('./middlewares/adminLoginRiquered.js'); var _adminLoginRiqueredjs2 = _interopRequireDefault(_adminLoginRiqueredjs);
 
@@ -18,7 +18,7 @@ var _TokenRoutesjs = require('./routes/administrador/TokenRoutes.js'); var _Toke
 var _rpaRoutesjs = require('./routes/rpaRoutes.js'); var _rpaRoutesjs2 = _interopRequireDefault(_rpaRoutesjs);
 
 // __dirname em ESM
-const _filename = fileURLToPath(import.meta.url);
+const _filename = _url.fileURLToPath.call(void 0, import.meta.url);
 const _dirname = _path2.default.dirname(_filename);
 
 const PUBLIC_DIR = _path2.default.join(_dirname, '../Front-end/Front-end');
