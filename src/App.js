@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import adminLoginRequired from './middlewares/adminLoginRiquered.js';
 
@@ -18,11 +17,9 @@ import AdmintokenRoutes from './routes/administrador/TokenRoutes.js';
 import RpaRoutes from './routes/rpaRoutes.js';
 
 // __dirname em ESM
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = path.dirname(_filename);
 
-const PUBLIC_DIR = path.join(_dirname, '../Front-end/Front-end');
-const PUBLIC_DIR_UPLOAD = path.join(_dirname, '../Front-end/Documentos Excel/');
+const PUBLIC_DIR = path.join(__dirname, '../Front-end/Front-end');
+const PUBLIC_DIR_UPLOAD = path.join(__dirname, '../Front-end/Documentos Excel/');
 
 /**
  * Classe principal da aplicação Express
