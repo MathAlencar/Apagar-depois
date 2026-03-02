@@ -1010,6 +1010,7 @@ class CadastroControllers {
 
           for (let i = 0; i < cnpjsNaoParticipantes.length; i++) {
             const cnpj = cnpjsNaoParticipantes[i];
+
             if (!cnpj) continue;
 
             const resultado = await processarPJSNaoParticipantes(cnpj, i);
@@ -1019,10 +1020,32 @@ class CadastroControllers {
           // Processando Garantidores da operação;
           const resultadoGarantidores = [];
 
+          // for (let i = 0; i < cpfCnpjGarantidores.length; i++) {
+          //   const cpfCnpj = cpfCnpjGarantidores[i];
+
+          //   if(cpfCnpj){
+
+          //   }
+
+          //   if (!cpfCnpj) continue;
+
+          //   const resultadoGarantidor = await processarGarantidores(cpfCnpj, i);
+          //   resultadoGarantidores.push(resultadoGarantidor);
+          // }
+
           for (let i = 0; i < cpfCnpjGarantidores.length; i++) {
             const cpfCnpj = cpfCnpjGarantidores[i];
+
+            // se vazio, ignora
             if (!cpfCnpj) continue;
 
+            // se o CPF/CNPJ já está nos tomadores, ignora
+            if (cpfCnpjTomadores.includes(cpfCnpj)) {
+              console.log(`Ignorando garantidor ${cpfCnpj} pois já é tomador`);
+              continue;
+            }
+
+            // só executa se não for tomador
             const resultadoGarantidor = await processarGarantidores(cpfCnpj, i);
             resultadoGarantidores.push(resultadoGarantidor);
           }

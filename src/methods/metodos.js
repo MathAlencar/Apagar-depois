@@ -1,9 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
-// import { fileURLToPath } from "url";
+import { fileURLToPath } from "url";
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export class Objetos{
 
@@ -30,6 +30,7 @@ export class Objetos{
    * - Se o mesmo arquivo já foi carregado, reutiliza cache
    */
   async carregarCidades(arquivoPath = null) {
+
     const arquivo =
       arquivoPath ??
       path.resolve(__dirname, '..', 'json', 'geral.json')
